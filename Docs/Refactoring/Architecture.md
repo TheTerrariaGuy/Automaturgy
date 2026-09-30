@@ -9,7 +9,10 @@
 | SpellQueue | Owns queued cells, recorded costs, and reserved mana | Plain C# |
 | ReactionResolver | Resolves fading, ordinary reactions, and overlaps against snapshots | BoardState, reaction lookup |
 | ReactionParser | Turns authored reaction text into rotated rules with diagnostics | GridMath, ElementDefinitions |
-| Indexing | Loads the reaction TextAsset and exposes reaction lookup to the scene | ReactionParser |
+| ReactionCatalog / RunLoadout | Static package definitions and equipped reaction/placement snapshot | ReactionParser |
+| Indexing | Compatibility adapter to the active loadout | InventorySession |
+| InventoryState / InventorySession | Shaped item placements, active packages, saves, and scene handoff | Item definitions, save store |
+| InventoryController / InventoryGridView | Dragging, snapped previews, controls, and Tilemap display | InventoryState |
 | ElementDefinitions | Shared stage alpha, damage, placement cost, and decay-effect IDs | Plain C# |
 | TilePresentation | Detects changed stages and deduplicates sprite-neighbor refreshes | Tile registry, TextureHandler |
 | Tile | Cell coordinates, sprite references, queued preview, particle handle | Authoritative BoardState through GameLogic |

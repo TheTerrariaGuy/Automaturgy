@@ -27,12 +27,13 @@ public class Selector : MonoBehaviour
         spriteRenderer.enabled = false;
         spriteRenderer = preview;
         GameLogic.INSTANCE.SelectionChanged += ShowSelection;
-        GameLogic.INSTANCE.UpdateSelection(ElementState.Fire);
         ShowSelection(GameLogic.INSTANCE.CurrentSelection);
     }
     
     private void ShowSelection(int type)
     {
+        spriteRenderer.enabled = type != 0;
+        if (type == 0) return;
         Sprite sprite = TextureHandler.INSTANCE.GetPreviewSprite(type);
         spriteRenderer.sprite = sprite;
         spriteRenderer.color = Color.white;

@@ -13,7 +13,9 @@
 | Assets/Scripts/Presentation/Particles | Particle catalog, pattern, pixelation, playback |
 | Assets/Scripts/Input | Pointer interaction |
 | Assets/Scripts/UI | Selection presentation and mana bar |
-| Assets/Data/Elements | Authored reaction text |
+| Assets/Data/Elements | Legacy reaction comparison fixture |
+| Assets/Scripts/Inventory | Inventory state, persistence, Tilemap views, and dragging |
+| Assets/Resources/InventoryItems | Editable reaction block definitions |
 | Assets/Data/Enemies | EnemyData assets |
 | Assets/Levels/Tiles | Background tile assets, including Spring |
 | Assets/Levels/Markers | Terrain/spawn markers, including Elevation |
@@ -32,20 +34,22 @@ Edit ElementDefinitions once for alpha, damage, placement cost, or decay effect.
 
 If the stage has special artwork, add an override to Assets/Rendering/ElementSprites.asset. Otherwise let it inherit its family shape. If it emits particles, add/update its ParticleCatalog tile entry.
 
-A stage needs a positive ManaCost to be an available queued placement type. The current selector still exposes the existing four element keys.
+A stage needs a positive ManaCost and an equipped fundamental package to be an available queued placement type. The selector exposes the existing four element keys, restricted by the active loadout.
 
 Player cast range, Blink range, cooldown, and mana cost are serialized on PlayerHandler. The migration copied their prior values from Indexing/GameLogic. Blink animation duration remains the existing blinkSpeed field.
 
 ## Author a reaction
 
-Edit Assets/Data/Elements/Reactions.txt. Indexing references this TextAsset in the gameplay scene.
+Edit the hardcoded Definitions string in Assets/Scripts/Gameplay/Combat/ReactionCatalog.cs. See [inventory and reaction packages](../Inventory.md) for package ownership and item authoring. Reactions.txt is retained as a legacy comparison fixture.
 
-Each rule occupies one line below a FIRE, WATER, ELECTRICITY, or STONE header:
+Each rule occupies one line below a PACKAGE ID ELEMENT header:
 
 ```text
-V Effect_Name I (1,0,200*) O (0,0,0,0) (1,0,210,51) D (0,1,2,3) E
+PACKAGE 101 FIRE
+R 1015 V Effect_Name I (1,0,200*) O (0,0,0,0) (1,0,210,51) D (0,1,2,3) E
 ```
 
+- R provides a unique reaction ID in the element's thousands range.
 - V is optional and names a ParticleCatalog reaction effect.
 - I tuples contain x, y, and required type. A trailing * matches reactive states in a family.
 - O tuples contain x, y, exact output type, and priority.

@@ -8,10 +8,11 @@ namespace Assets.Scripts
     /// <summary>Parses one reaction per line, retaining authoring and rotation order for deterministic ties.</summary>
     public static class ReactionParser
     {
-        public static IReadOnlyDictionary<int, List<Reaction>> Parse(string text)
+        public static IReadOnlyDictionary<int, List<Reaction>> Parse(string text, bool allowEmpty = false, bool requireIds = false)
         {
             if (string.IsNullOrWhiteSpace(text)) throw new FormatException("Reaction definitions are empty.");
             var rules = new Dictionary<int, List<Reaction>>();
+            var ids = new HashSet<int>();
             int family = 0, lineNumber = 0;
             foreach (string raw in text.Split('\n'))
             {
@@ -25,6 +26,14 @@ namespace Assets.Scripts
                     if (family == 0) throw new FormatException("A reaction needs an element header.");
                     string[] tokens = line.Split((char[])null, StringSplitOptions.RemoveEmptyEntries);
                     int i = 0;
+                    int id = 0;
+                    if (tokens[i] == "R")
+                    {
+                        id = Number(tokens[++i]); i++;
+                        if (id / 1000 != family / 100 || !ids.Add(id))
+                            throw new FormatException("Reaction ID must be unique and match its element's thousands range.");
+                    }
+                    else if (requireIds) throw new FormatException("Expected R followed by a reaction ID.");
                     string effect = null;
                     if (tokens[i] == "V") { effect = tokens[++i]; i++; }
                     Expect(tokens, ref i, "I");
@@ -58,13 +67,14 @@ namespace Assets.Scripts
                         int turns = Number(direction);
                         if (turns < 0 || turns > 3) throw new FormatException("Directions must be 0, 1, 2, or 3.");
                         rules[family].Add(new Reaction(requirements.Select(r => Rotate(r, turns)),
-                            outputs.Select(o => Rotate(o, turns)), effect, turns));
+                            outputs.Select(o => Rotate(o, turns)), effect, turns, id));
                     }
                 }
                 catch (Exception e) when (e is FormatException || e is IndexOutOfRangeException || e is OverflowException)
                 { throw new FormatException("Reaction line " + lineNumber + ": " + e.Message, e); }
             }
-            if (rules.Values.All(r => r.Count == 0)) throw new FormatException("No reactions were defined.");
+            if (rules.Count == 0 || (!allowEmpty && rules.Values.All(r => r.Count == 0)))
+                throw new FormatException("No reactions were defined.");
             return rules;
         }
         private static int Number(string value) => int.Parse(value, CultureInfo.InvariantCulture);

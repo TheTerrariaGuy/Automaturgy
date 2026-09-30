@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using Assets.Scripts.Inventory;
 
 namespace Assets.Scripts
 {
@@ -35,6 +36,7 @@ namespace Assets.Scripts
         private const float SubmitQueueManaCost = 5f;
         private readonly SpellQueue spellQueue = new();
         private ReactionResolver resolver;
+        public RunLoadout Loadout { get; private set; }
         private readonly TilePresentation presentation = new();
         private float reservedMana => spellQueue.ReservedMana;
         public event Action LevelInitialized;
@@ -48,6 +50,13 @@ namespace Assets.Scripts
             if (INSTANCE == null)
             {
                 INSTANCE = this;
+                try { Loadout = InventorySession.GetRun(); }
+                catch (Exception e)
+                {
+                    Debug.LogError("Cannot load spell inventory: " + e.Message);
+                    Loadout = new RunLoadout(Array.Empty<int>());
+                }
+                currentSelection = Loadout.FirstElement;
             } else
             {
                 Destroy(this);
@@ -83,7 +92,7 @@ namespace Assets.Scripts
             }
             Board = new BoardState(rows, cols, layout?.exists, layout?.elevations,
                 layout?.walkable, layout?.blocksSight, layout?.allowsSpells);
-            resolver = new ReactionResolver(Board, Indexing.INSTANCE.GetReactions);
+            resolver = new ReactionResolver(Board, Loadout.GetReactions);
             castableGrid = new bool[rows, cols];
             moveableGrid = new bool[rows, cols];
             tilesGrid = new Tile[rows, cols];
@@ -127,7 +136,7 @@ namespace Assets.Scripts
                 Array.Clear(castableGrid, 0, castableGrid.Length);
                 Array.Clear(moveableGrid, 0, moveableGrid.Length);
                 PlayerHandler player = PlayerHandler.INSTANCE;
-                if (player != null && Indexing.INSTANCE != null && HasCell(player.r, player.c))
+                if (player != null && HasCell(player.r, player.c))
                 {
                     int range = Mathf.Max(0, player.castRange);
                     int blinkRange = Mathf.Max(0, player.blinkRange);
@@ -172,6 +181,7 @@ namespace Assets.Scripts
 
         public void UpdateSelection(int newSelection)
         {
+            if (Loadout == null || !Loadout.CanPlace(newSelection)) return;
             if (currentSelection == newSelection) return;
             currentSelection = newSelection;
             SelectionChanged?.Invoke(newSelection);
@@ -206,7 +216,7 @@ namespace Assets.Scripts
 
         public bool CanQueueSpell(int r, int c, int type)
         {
-            return Castable(r, c) && CanCastAt(r, c) && !spellQueue.Contains(r, c) &&
+            return Loadout != null && Loadout.CanPlace(type) && Castable(r, c) && CanCastAt(r, c) && !spellQueue.Contains(r, c) &&
                 ElementDefinitions.TryManaCost(type, out float manaCost) &&
                 AvailableMana >= manaCost;
         }

@@ -5,6 +5,7 @@ namespace Assets.Scripts
 {
     public sealed class Reaction
     {
+        public int Id { get; }
         public IReadOnlyCollection<Requirement> Requirements { get; }
         public IReadOnlyCollection<Offset> Outputs { get; }
         public string Effect { get; }
@@ -12,8 +13,9 @@ namespace Assets.Scripts
     
         public Reaction(
             IEnumerable<Requirement> requirements,
-            IEnumerable<Offset> outputs, string effect = null, int direction = 0)
+            IEnumerable<Offset> outputs, string effect = null, int direction = 0, int id = 0)
         {
+            Id = id;
             Requirements = requirements.Distinct().ToArray();
             Outputs = outputs.Distinct().ToArray();
             Effect = effect;

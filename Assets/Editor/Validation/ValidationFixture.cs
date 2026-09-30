@@ -12,6 +12,12 @@ public static class ValidationFixture
 {
     private const string RestoreKey = "GridMage.Validation.RestoreScene";
     public const string GameplayScene = "Assets/Scenes/In Game.unity";
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void LoadValidationSpells()
+    {
+        if (!string.IsNullOrEmpty(SessionState.GetString(RestoreKey, "")))
+            Assets.Scripts.Inventory.InventorySession.SetRun(new RunLoadout(ReactionCatalog.Packages.Select(p => p.Id)));
+    }
     static ValidationFixture()
     {
         EditorApplication.playModeStateChanged += state =>
@@ -36,6 +42,8 @@ public static class ValidationFixture
         SceneManager.MoveGameObjectToScene(bundle, source);
         foreach (var root in source.GetRootGameObjects())
             if (root != bundle) root.transform.SetParent(bundle.transform, true);
+        // Keep source lights inactive while their copies are enabled in the fixture.
+        bundle.SetActive(false);
         var copy = UnityEngine.Object.Instantiate(bundle);
         SceneManager.MoveGameObjectToScene(copy, fixture);
         foreach (Transform child in copy.transform.Cast<Transform>().ToArray()) child.SetParent(null, true);
