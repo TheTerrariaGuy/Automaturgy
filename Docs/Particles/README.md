@@ -30,7 +30,7 @@ Historical preview labels refer to the original per-stage prefabs. Those stages 
 
 ## Reactions
 
-Names below have the `Reaction_` prefix and `.prefab` extension, under `Assets/Rendering/Particles/Prefabs/`. Cardinal and diagonal layouts preserve the actual canonical output cells in `Assets/Data/Elements/Reactions.txt`. `(x,y)` below uses those grid coordinates, with positive y going down on screen.
+Names below have the `Reaction_` prefix and `.prefab` extension, under `Assets/Rendering/Particles/Prefabs/`. Cardinal and diagonal layouts preserve the actual canonical output cells in `Assets/Resources/Spells.txt`. `(x,y)` below uses those grid coordinates, with positive y going down on screen.
 
 | Casting family + requirement | Prefab suffix | Interpretation |
 | --- | --- | --- |
@@ -90,7 +90,7 @@ The `damage` entries in `ParticleCatalog` map element families to these prefabs.
 
 `Tile.ChangeType` maintains one pooled tile effect through an opaque handle. Each catalog tile entry selects a shared family prefab and stores root scale plus named emitter settings (start color, lifetime color, emission rate and particle limit). Emitter names must be unique within a tile prefab and match the stage entries. All stages of a family share one pool, including effects first spawned at a faded stage. Unchanged tiles keep playing; fading stages update emission and color on the existing systems. Queued spells use the existing overlay until submitted. Ordinary stone has no effect. Effects follow their tile's active state; resetting the grid releases and reuses them before removing the old tiles.
 
-Reaction rules carry a `V` effect name and direction in `Assets/Data/Elements/Reactions.txt`. `ReactionResolver` tracks the owner of each accepted write across fading, normal reactions and overlaps. Only surviving outputs play at the end of the tick. This also removes duplicate symmetric bursts. The four spread/fade effects follow the cells actually accepted by the fading phase.
+Reaction rules carry a `V` effect name and direction in `Assets/Resources/Spells.txt`. `ReactionResolver` tracks the owner of each accepted write across fading, normal reactions and overlaps. Only surviving outputs play at the end of the tick. This also removes duplicate symmetric bursts. The four spread/fade effects follow the cells actually accepted by the fading phase.
 
 Each reaction prefab's `ParticlePattern` lists destination cells and bolt endpoints. `ParticleVFX` masks rejected groups before playback, starts only visible systems, and returns completed effects to the pool. A bolt needs both endpoints to survive, except its casting origin. Lava conversions may reach a stone destination; intervening stone still blocks them.
 

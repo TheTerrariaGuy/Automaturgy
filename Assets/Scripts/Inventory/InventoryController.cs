@@ -102,7 +102,8 @@ namespace Assets.Scripts.Inventory
         }
         private string Describe(InventoryItemDefinition definition) =>
             definition.displayName + "  /  " + definition.Width + " x " + definition.Height + "\n" +
-            (definition.packageId % 100 == 0 ? "Enables element placement and its self reactions." : "Adds cross-element reactions; does not unlock placement.");
+            definition.reactionIds.Distinct().Count() + " reactions. " +
+            (definition.placementElement != 0 ? "Enables element placement." : "Does not unlock placement.");
 
         public void Refresh()
         {
@@ -115,7 +116,7 @@ namespace Assets.Scripts.Inventory
             string[] names = { "Fire", "Water", "Electricity", "Stone" };
             string enabled = string.Join(", ", Enumerable.Range(1, 4).Where(i => loadout.CanPlace(i * 100)).Select(i => names[i - 1]));
             activeSummary.text = "Placement: " + (enabled.Length == 0 ? "none — add a fundamental block" : enabled) +
-                "\n" + loadout.PackageIds.Count + " active packages";
+                "\n" + loadout.ReactionIds.Count + " active reactions";
             status.text = InventorySession.Notice ?? (State.Recovery.Count > 0 ? State.Recovery.Count + " items awaiting recovery. Free space and choose Recover." : "Changes save automatically.");
         }
         public void EnterGame()

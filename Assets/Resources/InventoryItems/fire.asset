@@ -14,7 +14,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Inventory.InventoryItemDefinition
   itemId: fire
   displayName: Fundamental Fire
-  packageId: 100
+  reactionIds:
+  - 1000
+  - 1001
+  - 1002
+  - 1003
+  - 1004
+  - 1005
+  - 1006
+  - 1007
+  - 1008
+  placementElement: 100
   color: {r: 1, g: 0.42, b: 0.22, a: 1}
   sprite: {fileID: 7482667652216324306, guid: 2fe4ac3dd670d7942b7df782fd9624c8, type: 3}
   shape:

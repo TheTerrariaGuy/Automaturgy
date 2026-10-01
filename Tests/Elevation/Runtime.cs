@@ -44,13 +44,13 @@ System.Func<Assets.Scripts.Reaction, int[,]> resolveRule = rule =>
 };
 game.grid[4, 6] = 200;
 var ingredient = new Assets.Scripts.Reaction(
-    new[] { new Assets.Scripts.Requirement(2, 0, 200, false) },
+    new[] { new Assets.Scripts.Requirement(2, 0, 200) },
     new[] { new Assets.Scripts.Offset(0, 0, 201) });
 require(resolveRule(ingredient)[4, 4] != 201, "Ingredient across cliff rejected");
 game.elevationGrid[4, 5] = 1.5f;
 require(resolveRule(ingredient)[4, 4] == 201, "Ingredient up ramp accepted");
 System.Func<int, int, int, int[,]> output = (type, row, col) => resolveRule(
-    new Assets.Scripts.Reaction(new[] { new Assets.Scripts.Requirement(0, 0, 100, false) },
+    new Assets.Scripts.Reaction(new[] { new Assets.Scripts.Requirement(0, 0, 100) },
         new[] { new Assets.Scripts.Offset(col - 4, row - 4, type) }));
 require(output(100, 4, 6)[4, 6] == 100, "Output climbs ramp");
 game.grid[4, 6] = 0;

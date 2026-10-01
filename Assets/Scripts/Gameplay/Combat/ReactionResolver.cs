@@ -14,6 +14,9 @@ namespace Assets.Scripts
         private readonly List<Change> changes = new();
         private readonly List<ReactionVisual> visuals = new();
         private readonly Dictionary<Vector2Int, ReactionVisual> visualOwners = new();
+        private readonly int[] captures = new int[ReactionParser.MaxVariables];
+        private readonly int[] captureCounts = new int[ReactionParser.MaxVariables];
+        private readonly HashSet<Offset> outputSeen = new();
         public ReactionResolver(BoardState board, Func<int, IReadOnlyList<Reaction>> reactions)
         { this.board = board; this.reactions = reactions; }
 
@@ -80,8 +83,16 @@ namespace Assets.Scripts
                     family = ElementState.BaseType(before[r, c]);
                 }
                 foreach (var reaction in reactions(family))
+                {
+                    Array.Clear(captureCounts, 0, captureCounts.Length);
                     if (before == null ? CheckReq(input, reaction.Requirements, r, c) : IsOriginReaction(reaction, type))
+                    {
+                        for (int variable = 0; variable < reaction.VariableCount; variable++)
+                            if (captureCounts[variable] > 1)
+                                Debug.LogWarning($"Reaction {reaction.Id} at ({c},{r}), direction {reaction.Direction}: variable {(char)('a' + variable)} matched {captureCounts[variable]} detections; using last detected value {captures[variable]}.");
                         QueueChanges(changes, reaction, r, c, ref insertionOrder);
+                    }
+                }
             }
             ApplyQueuedChanges(changes, next);
             return next;
@@ -100,11 +111,12 @@ namespace Assets.Scripts
                 {
                     return false;
                 } 
+                Capture(requirement, g[targetRow, targetCol]);
             }
             return true;
         }
 
-        private static bool IsOriginReaction(Reaction reaction, int type)
+        private bool IsOriginReaction(Reaction reaction, int type)
         {
             if (reaction.Requirements.Count != 1)
             {
@@ -113,12 +125,25 @@ namespace Assets.Scripts
 
             foreach (Requirement requirement in reaction.Requirements)
             {
-                return requirement.x == 0 &&
-                       requirement.y == 0 &&
-                       requirement.Matches(type);
+                if (requirement.x != 0 || requirement.y != 0 || !requirement.Matches(type)) return false;
+                Capture(requirement, type);
+                return true;
             }
 
             return false;
+        }
+
+        private void Capture(Requirement requirement, int type)
+        {
+            Set(requirement.XVariable, requirement.CaptureX);
+            Set(requirement.YVariable, requirement.CaptureY);
+            Set(requirement.TypeVariable, type);
+            void Set(int variable, int value)
+            {
+                if (variable < 0) return;
+                captures[variable] = value;
+                captureCounts[variable]++;
+            }
         }
 
         private void QueueChanges(
@@ -129,8 +154,11 @@ namespace Assets.Scripts
             ref int insertionOrder)
         {
             var visual = NewVisual(reaction.Effect, originRow, originCol, reaction.Direction);
-            foreach (Offset output in reaction.Outputs)
+            outputSeen.Clear();
+            foreach (var mapping in reaction.OutputMappings)
+            foreach (Offset output in mapping.Resolve(captures))
             {
+                if (!outputSeen.Add(output)) continue;
                 int targetRow = originRow + output.y;
                 int targetCol = originCol + output.x;
 

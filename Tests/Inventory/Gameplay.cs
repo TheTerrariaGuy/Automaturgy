@@ -4,7 +4,7 @@ if (game == null) throw new System.Exception("Enter Game must load gameplay.");
 int checks = 0;
 System.Action<bool, string> require = (ok, message) => { checks++; if (!ok) throw new System.Exception(message); };
 require(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "In Game", "Correct gameplay scene.");
-require(game.Loadout.PackageIds.SequenceEqual(new[] { 100, 400 }), "Gameplay received fire and stone only.");
+require(game.Loadout.PlacementElements.SequenceEqual(new[] { 100, 400 }) && game.Loadout.ReactionIds.SequenceEqual(Enumerable.Range(1000, 9)), "Gameplay received fire and stone only.");
 require(game.Loadout.CanPlace(100) && game.Loadout.CanPlace(400) && !game.Loadout.CanPlace(200) && !game.Loadout.CanPlace(300), "Fundamental blocks determine placement.");
 require(game.Loadout.GetReactions(100).Any(r => r.Effect == "Fire_Burnout"), "Fundamental fire includes decay.");
 require(!game.Loadout.GetReactions(100).Any(r => r.Effect == "Fire_Water_Cardinal_Geyser"), "Unequipped cross reactions are absent.");

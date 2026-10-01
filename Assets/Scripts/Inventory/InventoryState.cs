@@ -115,7 +115,12 @@ namespace Assets.Scripts.Inventory
         {
             foreach (var offset in Definition(item).shape) Cells(item.grid)[item.x + offset.x, item.y + offset.y] = item;
         }
-        public RunLoadout BuildLoadout() => new(items.Where(i => i.grid == InventoryGrid.Active).Select(i => Definition(i).packageId));
+        public RunLoadout BuildLoadout()
+        {
+            var equipped = items.Where(i => i.grid == InventoryGrid.Active).Select(Definition).ToArray();
+            return new RunLoadout(equipped.SelectMany(d => d.reactionIds),
+                equipped.Where(d => d.placementElement != 0).Select(d => d.placementElement));
+        }
         public InventorySaveData Snapshot() => new()
         {
             items = items.Select(i => i.Copy()).ToList(), recovery = recovery.Select(i => i.Copy()).ToList()
@@ -124,7 +129,7 @@ namespace Assets.Scripts.Inventory
         public static InventorySaveData NewProfile(IEnumerable<InventoryItemDefinition> catalog)
         {
             var state = new InventoryState(catalog, new InventorySaveData());
-            foreach (var definition in state.definitions.Values.OrderBy(d => d.packageId))
+            foreach (var definition in state.definitions.Values.OrderBy(d => d.itemId, StringComparer.Ordinal))
                 state.recovery.Add(new ItemPlacement { instanceId = Guid.NewGuid().ToString("N"), itemId = definition.itemId });
             state.RecoverAvailable();
             return state.Snapshot();

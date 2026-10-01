@@ -16,7 +16,7 @@ public static class ValidationFixture
     private static void LoadValidationSpells()
     {
         if (!string.IsNullOrEmpty(SessionState.GetString(RestoreKey, "")))
-            Assets.Scripts.Inventory.InventorySession.SetRun(new RunLoadout(ReactionCatalog.Packages.Select(p => p.Id)));
+            Assets.Scripts.Inventory.InventorySession.SetRun(new RunLoadout(ReactionCatalog.ReactionIds, new[] { 100, 200, 300, 400 }));
     }
     static ValidationFixture()
     {

@@ -30,34 +30,34 @@ The painted level is still serialized inside In Game.unity. No empty Maps folder
 
 ## Add or tune an element stage
 
-Edit ElementDefinitions once for alpha, damage, placement cost, or decay effect. Use the existing family encoding unless intentionally changing the protocol.
+Edit ElementDefinitions once for alpha, damage, placement cost, decay effect, or default reaction priority. Use the existing family encoding unless intentionally changing the protocol.
 
 If the stage has special artwork, add an override to Assets/Rendering/ElementSprites.asset. Otherwise let it inherit its family shape. If it emits particles, add/update its ParticleCatalog tile entry.
 
-A stage needs a positive ManaCost and an equipped fundamental package to be an available queued placement type. The selector exposes the existing four element keys, restricted by the active loadout.
+A stage needs a positive ManaCost and an equipped block granting that placement element to be an available queued placement type. The selector exposes the existing four element keys, restricted by the active loadout.
 
 Player cast range, Blink range, cooldown, and mana cost are serialized on PlayerHandler. The migration copied their prior values from Indexing/GameLogic. Blink animation duration remains the existing blinkSpeed field.
 
 ## Author a reaction
 
-Edit the hardcoded Definitions string in Assets/Scripts/Gameplay/Combat/ReactionCatalog.cs. See [inventory and reaction packages](../Inventory.md) for package ownership and item authoring. Reactions.txt is retained as a legacy comparison fixture.
+Edit Assets/Resources/Spells.txt, the TextAsset assigned to the Bootstrap component. Bootstrap compiles it before opening Inventory. See [inventory and reaction grants](../Inventory.md) for individual reaction grants and item authoring. Reactions.txt is retained as a legacy comparison fixture.
 
-Each rule occupies one line below a PACKAGE ID ELEMENT header:
+Each rule occupies one line below an element header:
 
 ```text
-PACKAGE 101 FIRE
-R 1015 V Effect_Name I (1,0,200*) O (0,0,0,0) (1,0,210,51) D (0,1,2,3) E
+FIRE
+R 1015 V Effect_Name I (1+2,0,20.-203) O (0,0,0) (1+2,0,210) D (0+1+2+3) E
 ```
 
 - R provides a unique reaction ID in the element's thousands range.
 - V is optional and names a ParticleCatalog reaction effect.
-- I tuples contain x, y, and required type. A trailing * matches reactive states in a family.
-- O tuples contain x, y, exact output type, and priority.
+- I tuples contain x, y, and accepted tile types. Each field supports set union (+), difference (-), and a one-digit wildcard (.). All expanded input positions must match; types within a field are alternatives.
+- O tuples contain x, y, output type, and an optional priority override. Omitted priorities come from the output tile definition. Set-valued fields expand to concrete writes during compilation.
 - D contains quarter-turn directions 0 through 3.
 - E ends the rule.
 - Empty lines, START/END lines, and lines beginning with # are accepted.
 
-The parser validates tuple structure, known types, family requirements, directions, required sections, and trailing tokens. Errors include the line number.
+The parser validates tuple structure, known types, family requirements, directions, required sections, and trailing tokens. Errors include source, line number, and field. See the inventory guide for signed literals, expansion limits, and startup behavior.
 
 Add the corresponding prefab/catalog entry when using a new V identifier. Catalog validation checks those cross-references before accepting authored content. A missing effect should be intentional, represented by omitting V.
 

@@ -4,7 +4,7 @@ Start with the [Assets refactoring guide](Refactoring/README.md) for the current
 
 ## System and artwork references
 
-- [Inventory, item shapes, reaction packages, and saves](Inventory.md)
+- [Inventory, item shapes, reaction grants, and saves](Inventory.md)
 - [Level authoring and coordinates](TilemapLevels.md)
 - [World rendering and sorting](WorldRendering.md)
 - [Element sprite mapping](ElementSpriteMap.md)

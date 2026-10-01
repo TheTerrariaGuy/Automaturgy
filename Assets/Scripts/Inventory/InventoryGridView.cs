@@ -46,7 +46,8 @@ namespace Assets.Scripts.Inventory
         public void Preview(InventoryItemDefinition definition, Vector2Int origin, bool valid)
         {
             ghost.ClearAllTiles();
-            Color color = valid ? new Color(.4f, 1f, .7f, .55f) : new Color(1f, .3f, .35f, .55f);
+            Color color = valid ? definition.color : new Color(1f, .3f, .35f);
+            color.a = .55f;
             foreach (var offset in definition.shape)
                 Paint(ghost, Cell(origin.x + offset.x, origin.y + offset.y), color, .92f);
         }

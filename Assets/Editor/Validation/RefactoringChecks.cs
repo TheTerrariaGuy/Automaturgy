@@ -13,7 +13,7 @@ public static class RefactoringChecks
     public static void Run()
     {
         var cases = JArray.Parse(File.ReadAllText("Tests/Refactoring/CombatBaseline.json"));
-        var loadout = new RunLoadout(ReactionCatalog.Packages.Select(p => p.Id));
+        var loadout = new RunLoadout(ReactionCatalog.ReactionIds, new[] { 100, 200, 300, 400 });
         var rules = new[] { 100, 200, 300, 400 }.ToDictionary(type => type, type => loadout.GetReactions(type));
         int count = 0;
         foreach (var test in cases)

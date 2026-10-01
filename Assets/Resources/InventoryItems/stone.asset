@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Inventory.InventoryItemDefinition
   itemId: stone
   displayName: Fundamental Stone
-  packageId: 400
+  reactionIds: []
+  placementElement: 400
   color: {r: 0.57, g: 0.76, b: 0.65, a: 1}
   sprite: {fileID: 7482667652216324306, guid: 2fe4ac3dd670d7942b7df782fd9624c8, type: 3}
   shape:

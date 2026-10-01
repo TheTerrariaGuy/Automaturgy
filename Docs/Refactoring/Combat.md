@@ -45,7 +45,7 @@ The same output queue/apply implementation handles ordinary and overlap phases. 
 
 ## Priority and snapshots
 
-Outputs are sorted by ascending priority and then ascending insertion order. They are applied in that order, so the later accepted write wins.
+Output priorities are baked at startup from the output tile definition unless the spell supplies an explicit fourth tuple field. Outputs are sorted by ascending priority and then ascending insertion order. They are applied in that order, so the later accepted write wins.
 
 Insertion order follows row-major origins, authored rule order, direction order, and output order. List.Sort uses the same total comparator formerly used by SortedSet. No equal insertion orders are generated within a phase.
 

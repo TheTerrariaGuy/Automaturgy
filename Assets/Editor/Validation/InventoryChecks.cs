@@ -22,9 +22,10 @@ public static class InventoryChecks
     public static void Run()
     {
         assertions = 0;
-        var all = new RunLoadout(ReactionCatalog.Packages.Select(p => p.Id));
-        Require(all.PackageIds.SequenceEqual(new[] { 100, 101, 200, 300, 301, 400 }), "Six packages in authored order.");
-        var legacy = ReactionParser.Parse(File.ReadAllText("Assets/Data/Elements/Reactions.txt"));
+        var all = new RunLoadout(ReactionCatalog.ReactionIds, new[] { 100, 200, 300, 400 });
+        Require(all.ReactionIds.Count == 22, "All authored reaction IDs are available individually.");
+        string legacyText = File.ReadAllText("Assets/Data/Elements/Reactions.txt");
+        var legacy = ReactionParser.Parse(legacyText);
         foreach (var family in legacy)
         {
             var actual = all.GetReactions(family.Key);
@@ -37,30 +38,44 @@ public static class InventoryChecks
                 Require(rule.Id / 1000 == family.Key / 100, "Reaction ID family.");
             }
         }
-        var reordered = new RunLoadout(new[] { 301, 100, 400, 200, 101, 300, 100 });
+        var reordered = new RunLoadout(ReactionCatalog.ReactionIds.Reverse().Concat(new[] { 1000, 3004 }));
         Require(reordered.Reactions.SequenceEqual(all.Reactions), "Layout and duplicate grants cannot alter rule ordering.");
-        Require(new RunLoadout(new[] { 400 }).CanPlace(400) && new RunLoadout(new[] { 400 }).Reactions.Count == 0, "Stone unlocks without dummy rules.");
-        Require(!new RunLoadout(new[] { 101, 301 }).CanPlace(100), "Cross reactions do not grant placement.");
+        var stone = new RunLoadout(Array.Empty<int>(), new[] { 400 });
+        Require(stone.CanPlace(400) && stone.Reactions.Count == 0, "Stone unlocks without dummy rules.");
+        Require(!new RunLoadout(new[] { 1000, 1009, 3004 }).CanPlace(100), "Reaction grants do not implicitly grant placement.");
         Require(new RunLoadout(Array.Empty<int>()).FirstElement == 0, "Empty loadout is valid.");
-        Require(new RunLoadout(new[] { 100 }).GetReactions(100).Any(r => r.Effect == "Fire_Burnout"), "Fire decay belongs to fundamental block.");
-        Reject(() => new RunLoadout(new[] { 999 }), "Unknown packages rejected.");
-        Reject(() => ReactionCatalog.ParsePackages("PACKAGE 100 WATER"), "Package family mismatch rejected.");
-        Reject(() => ReactionCatalog.ParsePackages("PACKAGE 400 STONE\nPACKAGE 400 STONE"), "Duplicate package IDs rejected.");
-        Reject(() => ReactionCatalog.ParsePackages("PACKAGE 100 FIRE\nR 2000 I (0,0,100) O (0,0,0,0) D (0) E"), "Wrong reaction ID family rejected.");
-        Reject(() => ReactionCatalog.ParsePackages("PACKAGE 100 FIRE\nR 1000 I (0,0,100) O (0,0,0,0) D (0) E\nPACKAGE 101 FIRE\nR 1000 I (0,0,100) O (0,0,0,0) D (0) E"), "Duplicate IDs across packages rejected.");
+        var selected = new RunLoadout(new[] { 3004, 1009, 1009 }, new[] { 400, 100, 400 });
+        Require(selected.ReactionIds.SequenceEqual(new[] { 1009, 3004 }), "Individual mixed-family grants are deduplicated in catalog order.");
+        Require(selected.GetReactions(100).Count == 4 && selected.GetReactions(100).All(r => r.Id == 1009) &&
+            selected.GetReactions(300).Count == 4 && selected.GetReactions(200).Count == 0,
+            "Selecting a reaction includes its rotations and no sibling reactions.");
+        Require(selected.PlacementElements.SequenceEqual(new[] { 100, 400 }) && selected.FirstElement == 100,
+            "Placement grants are independent, deduplicated, and sorted.");
+        Reject(() => new RunLoadout(new[] { 999 }), "Unknown reactions rejected.");
+        Reject(() => new RunLoadout(Array.Empty<int>(), new[] { 101 }), "Invalid placement elements rejected.");
+        Reject(() => ReactionParser.Parse("FIRE\nR 2000 I (0,0,100) O (0,0,0,0) D (0) E", requireIds: true), "Wrong reaction ID family rejected.");
+        Reject(() => ReactionParser.Parse("FIRE\nR 1000 I (0,0,100) O (0,0,0,0) D (0) E\nR 1000 I (0,0,100) O (0,0,0,0) D (0) E", requireIds: true), "Duplicate reaction IDs rejected.");
 
         var definitions = Resources.LoadAll<InventoryItemDefinition>("InventoryItems");
         Require(definitions.Length == 6, "Six editable starter assets.");
+        CheckGrants(definitions, "fire", 100, Enumerable.Range(1000, 9).ToArray());
+        CheckGrants(definitions, "fire_interactions", 0, Enumerable.Range(1009, 6).ToArray());
+        CheckGrants(definitions, "water", 200, 2000);
+        CheckGrants(definitions, "electricity", 300, 3000, 3001, 3002, 3003);
+        CheckGrants(definitions, "electricity_interactions", 0, 3004, 3005);
+        CheckGrants(definitions, "stone", 400);
         var starter = InventoryState.NewProfile(definitions);
         var starterState = new InventoryState(definitions, starter);
         Require(starterState.Items.Count == 6 && starterState.Recovery.Count == 0, "Starter items fit in storage.");
-        Require(starterState.BuildLoadout().PackageIds.Count == 0, "Stored items are inactive.");
+        Require(starterState.BuildLoadout().ReactionIds.Count == 0 && starterState.BuildLoadout().PlacementElements.Count == 0, "Stored items are inactive.");
         var single = ScriptableObject.CreateInstance<InventoryItemDefinition>();
         var lShape = ScriptableObject.CreateInstance<InventoryItemDefinition>();
         try
         {
-            single.itemId = "single"; single.displayName = "Single"; single.packageId = 200;
-            lShape.itemId = "ell"; lShape.displayName = "L"; lShape.packageId = 100;
+            single.itemId = "single"; single.displayName = "Single"; single.placementElement = 200;
+            single.reactionIds = new() { 2000, 1009 };
+            lShape.itemId = "ell"; lShape.displayName = "L"; lShape.placementElement = 100;
+            lShape.reactionIds = new() { 1009, 3004 };
             lShape.shape = new() { new(0,0), new(0,1), new(1,1) };
             var catalog = new[] { single, lShape };
             var data = new InventorySaveData { items = new()
@@ -82,6 +97,13 @@ public static class InventoryChecks
             Require(state.Move(ell, InventoryGrid.Active, 3, 3) && changes == 1, "Transfer commits once.");
             Require(state.At(InventoryGrid.Storage, 0, 0) == null && ReferenceEquals(state.At(InventoryGrid.Active, 4, 4), ell), "Transfer clears old cells and fills new cells.");
             Require(state.BuildLoadout().CanPlace(100) && !state.BuildLoadout().CanPlace(200), "Only active fundamental grants placement.");
+            Require(state.BuildLoadout().ReactionIds.SequenceEqual(new[] { 1009, 3004 }), "Active block grants exactly its individual reaction list.");
+            Require(state.Move(dot, InventoryGrid.Active, 0, 0) &&
+                state.BuildLoadout().ReactionIds.SequenceEqual(new[] { 1009, 2000, 3004 }),
+                "Overlapping reaction grants from different blocks activate once.");
+            Require(state.Move(dot, InventoryGrid.Storage, 1, 0) &&
+                state.BuildLoadout().ReactionIds.SequenceEqual(new[] { 1009, 3004 }) && !state.BuildLoadout().CanPlace(200),
+                "Unequipping removes exclusive grants and retains shared reactions.");
             Require(state.Move(ell, InventoryGrid.Active, 3, 2), "Moving over own cells is valid.");
             var reloaded = new InventoryState(catalog, state.Snapshot());
             Require(reloaded.At(InventoryGrid.Active, 4, 3)?.instanceId == "a", "Load rebuilds shaped occupancy.");
@@ -95,11 +117,21 @@ public static class InventoryChecks
             lShape.shape.Add(new Vector2Int(0, 0));
             Reject(lShape.Validate, "Duplicate shape cells rejected."); lShape.shape.RemoveAt(3);
             CheckFiles(state, catalog);
+            single.reactionIds.Add(999);
+            Reject(single.Validate, "Items reject unknown reaction IDs."); single.reactionIds.Remove(999);
+            single.placementElement = 101;
+            Reject(single.Validate, "Items reject invalid placement elements.");
         }
         finally { UnityEngine.Object.DestroyImmediate(single); UnityEngine.Object.DestroyImmediate(lShape); }
         Directory.CreateDirectory("Temp/InventoryChecks");
         string result = "PASS: " + assertions + " inventory/catalog/save assertions.";
         File.WriteAllText("Temp/InventoryChecks/Results.txt", result); Debug.Log(result);
+    }
+    private static void CheckGrants(InventoryItemDefinition[] definitions, string id, int placement, params int[] reactions)
+    {
+        var definition = definitions.Single(d => d.itemId == id);
+        Require(definition.placementElement == placement && definition.reactionIds.SequenceEqual(reactions),
+            id + " retains its authored placement and reaction grants.");
     }
     private static void CheckFiles(InventoryState state, InventoryItemDefinition[] definitions)
     {

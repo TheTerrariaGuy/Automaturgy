@@ -14,7 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Inventory.InventoryItemDefinition
   itemId: water
   displayName: Fundamental Water
-  packageId: 200
+  reactionIds:
+  - 2000
+  placementElement: 200
   color: {r: 0.28, g: 0.65, b: 1, a: 1}
   sprite: {fileID: 7482667652216324306, guid: 2fe4ac3dd670d7942b7df782fd9624c8, type: 3}
   shape:

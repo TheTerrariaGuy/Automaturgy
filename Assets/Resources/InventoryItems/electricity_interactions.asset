@@ -14,7 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Inventory.InventoryItemDefinition
   itemId: electricity_interactions
   displayName: Electricity Interactions
-  packageId: 301
+  reactionIds:
+  - 3004
+  - 3005
+  placementElement: 0
   color: {r: 1, g: 0.87, b: 0.4, a: 1}
   sprite: {fileID: 7482667652216324306, guid: 2fe4ac3dd670d7942b7df782fd9624c8, type: 3}
   shape:

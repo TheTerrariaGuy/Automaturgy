@@ -10,7 +10,10 @@ namespace Assets.Scripts.Inventory
     {
         public string itemId;
         public string displayName;
-        public int packageId;
+        [Tooltip("Individual reaction IDs granted while this block is in the active grid.")]
+        public List<int> reactionIds = new();
+        [Tooltip("Element placement unlocked by this block: 0 = none, 100 = fire, 200 = water, 300 = electricity, 400 = stone.")]
+        public int placementElement;
         public Color color = Color.white;
         public Sprite sprite;
         [Tooltip("Occupied cells from the top-left bounding corner. X right, Y down. No rotation.")]
@@ -22,8 +25,10 @@ namespace Assets.Scripts.Inventory
         {
             if (string.IsNullOrWhiteSpace(itemId) || string.IsNullOrWhiteSpace(displayName))
                 throw new InvalidOperationException(name + ": item ID and name are required.");
-            if (!ReactionCatalog.Contains(packageId))
-                throw new InvalidOperationException(name + ": unknown package " + packageId);
+            if (reactionIds == null || reactionIds.Any(id => !ReactionCatalog.Contains(id)))
+                throw new InvalidOperationException(name + ": reaction list contains an unknown reaction ID or is null.");
+            if (placementElement != 0 && !RunLoadout.IsPlacementElement(placementElement))
+                throw new InvalidOperationException(name + ": invalid placement element " + placementElement);
             if (shape == null || shape.Count == 0 || shape.Distinct().Count() != shape.Count ||
                 shape.Any(p => p.x < 0 || p.y < 0) || shape.Min(p => p.x) != 0 || shape.Min(p => p.y) != 0)
                 throw new InvalidOperationException(name + ": shape must contain unique nonnegative offsets normalized to its top-left bounds.");

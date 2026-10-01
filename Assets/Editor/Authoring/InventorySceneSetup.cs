@@ -28,12 +28,12 @@ public static class InventorySceneSetup
         Directory.CreateDirectory(ItemFolder); Directory.CreateDirectory(ArtFolder);
         AssetDatabase.Refresh();
         var square = CreateSquare();
-        CreateItem("fire", "Fundamental Fire", 100, new Color(1f, .42f, .22f), square.sprite, (0,0), (0,1), (1,1));
-        CreateItem("fire_interactions", "Fire Interactions", 101, new Color(1f, .68f, .28f), square.sprite, (0,0), (1,0), (2,0), (1,1));
-        CreateItem("water", "Fundamental Water", 200, new Color(.28f, .65f, 1f), square.sprite, (0,0), (0,1));
-        CreateItem("electricity", "Fundamental Electricity", 300, new Color(.78f, .53f, 1f), square.sprite, (1,0), (0,1), (1,1));
-        CreateItem("electricity_interactions", "Electricity Interactions", 301, new Color(1f, .87f, .4f), square.sprite, (0,0), (1,0), (1,1), (2,1));
-        CreateItem("stone", "Fundamental Stone", 400, new Color(.57f, .76f, .65f), square.sprite, (0,0), (1,0), (0,1), (1,1));
+        CreateItem("fire", "Fundamental Fire", 100, new[] { 1000, 1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008 }, new Color(1f, .42f, .22f), square.sprite, (0,0), (0,1), (1,1));
+        CreateItem("fire_interactions", "Fire Interactions", 0, new[] { 1009, 1010, 1011, 1012, 1013, 1014 }, new Color(1f, .68f, .28f), square.sprite, (0,0), (1,0), (2,0), (1,1));
+        CreateItem("water", "Fundamental Water", 200, new[] { 2000 }, new Color(.28f, .65f, 1f), square.sprite, (0,0), (0,1));
+        CreateItem("electricity", "Fundamental Electricity", 300, new[] { 3000, 3001, 3002, 3003 }, new Color(.78f, .53f, 1f), square.sprite, (1,0), (0,1), (1,1));
+        CreateItem("electricity_interactions", "Electricity Interactions", 0, new[] { 3004, 3005 }, new Color(1f, .87f, .4f), square.sprite, (0,0), (1,0), (1,1), (2,1));
+        CreateItem("stone", "Fundamental Stone", 400, Array.Empty<int>(), new Color(.57f, .76f, .65f), square.sprite, (0,0), (1,0), (0,1), (1,1));
 
         var scene = SceneManager.GetActiveScene().path == ScenePath ? SceneManager.GetActiveScene() : EditorSceneManager.OpenScene(ScenePath);
         var existing = UnityEngine.Object.FindAnyObjectByType<InventoryController>();
@@ -107,12 +107,13 @@ public static class InventorySceneSetup
         }
         return tile;
     }
-    private static void CreateItem(string id, string title, int package, Color color, Sprite sprite, params (int x, int y)[] shape)
+    private static void CreateItem(string id, string title, int placementElement, int[] reactionIds, Color color, Sprite sprite, params (int x, int y)[] shape)
     {
         string path = ItemFolder + "/" + id + ".asset";
         if (AssetDatabase.LoadAssetAtPath<InventoryItemDefinition>(path) != null) return;
         var item = ScriptableObject.CreateInstance<InventoryItemDefinition>();
-        item.itemId = id; item.displayName = title; item.packageId = package; item.color = color; item.sprite = sprite;
+        item.itemId = id; item.displayName = title; item.placementElement = placementElement;
+        item.reactionIds = reactionIds.ToList(); item.color = color; item.sprite = sprite;
         item.shape = shape.Select(p => new Vector2Int(p.x, p.y)).ToList(); item.Validate();
         AssetDatabase.CreateAsset(item, path);
     }
@@ -163,7 +164,7 @@ public static class InventorySceneSetup
     }
     private static void ConfigureBuild()
     {
-        var paths = new[] { ScenePath, "Assets/Scenes/In Game.unity" };
+        var paths = new[] { "Assets/Scenes/Bootstrap.unity", ScenePath, "Assets/Scenes/In Game.unity" };
         EditorBuildSettings.scenes = paths.Select(p => new EditorBuildSettingsScene(p, true))
             .Concat(EditorBuildSettings.scenes.Where(s => !paths.Contains(s.path))).ToArray();
     }

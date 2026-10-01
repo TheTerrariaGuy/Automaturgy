@@ -31,7 +31,7 @@ try {
     settings.backgroundBehavior = UnityEngine.InputSystem.InputSettings.BackgroundBehavior.IgnoreFocus;
     settings.editorInputBehaviorInPlayMode = UnityEngine.InputSystem.InputSettings.EditorInputBehaviorInPlayMode.AllDeviceInputAlwaysGoesToGameView;
     require(state.Items.Count == 6, "Starter inventory has six items.");
-    var fire = state.Items.First(i => state.Definition(i).packageId == 100);
+    var fire = state.Items.First(i => state.Definition(i).itemId == "fire");
     require(fire.grid == Assets.Scripts.Inventory.InventoryGrid.Storage, "Fresh profile starts in storage.");
     pointer(controller.storage, fire.x + 1, fire.y + 1, false);
     pointer(controller.storage, fire.x + 1, fire.y + 1, true);
@@ -41,7 +41,10 @@ try {
     require(preview.GetTile(Assets.Scripts.Inventory.InventoryGridView.Cell(1, 1)) != null, "Preview retains grabbed-cell offset.");
     require(preview.GetTile(Assets.Scripts.Inventory.InventoryGridView.Cell(2, 1)) == null, "Preview leaves shape hole empty.");
     var color = preview.GetColor(Assets.Scripts.Inventory.InventoryGridView.Cell(1, 1));
-    require(color.a > 0 && color.a < 1 && color.g > color.r, "Valid ghost is translucent green.");
+    var itemColor = state.Definition(fire).color;
+    require(Mathf.Approximately(color.a, .55f) && Mathf.Approximately(color.r, itemColor.r) &&
+        Mathf.Approximately(color.g, itemColor.g) && Mathf.Approximately(color.b, itemColor.b),
+        "Valid ghost keeps the item's color with preview transparency.");
     var image = CheckSupport.RenderCamera(controller.viewCamera, 1440, 900);
     System.IO.File.WriteAllBytes("Temp/InventoryChecks/ValidGhost.png", image.EncodeToPNG()); UnityEngine.Object.DestroyImmediate(image);
     pointer(controller.active, 2, 2, false);
@@ -58,9 +61,9 @@ try {
     pointer(controller.active, 1, 1, true); controller.CancelDrag();
     require(fire.x == 1 && fire.y == 1 && controller.Dragging == null, "Cancellation preserves original placement.");
     pointer(controller.active, 1, 1, false);
-    var stone = state.Items.First(i => state.Definition(i).packageId == 400);
+    var stone = state.Items.First(i => state.Definition(i).itemId == "stone");
     require(state.Move(stone, Assets.Scripts.Inventory.InventoryGrid.Active, 0, 3), "Equip stone alongside fire.");
-    require(state.BuildLoadout().PackageIds.SequenceEqual(new[] { 100, 400 }), "Equipped packages only.");
+    require(state.BuildLoadout().PlacementElements.SequenceEqual(new[] { 100, 400 }) && state.BuildLoadout().ReactionIds.SequenceEqual(Enumerable.Range(1000, 9)), "Equipped reaction and placement grants only.");
     if (eventSystem != null) eventSystem.enabled = eventsEnabled;
     Canvas.ForceUpdateCanvases();
     var button = controller.enterButton;
@@ -70,7 +73,7 @@ try {
     eventSystem.RaycastAll(eventData, hits);
     require(hits.Any(h => h.gameObject == button.gameObject), "Enter Game button is reachable by the UI raycaster.");
     button.onClick.Invoke();
-    require(Assets.Scripts.Inventory.InventorySession.CurrentRun.PackageIds.SequenceEqual(new[] { 100, 400 }), "Enter Game passes an explicit loadout snapshot.");
+    require(Assets.Scripts.Inventory.InventorySession.CurrentRun.PlacementElements.SequenceEqual(new[] { 100, 400 }) && Assets.Scripts.Inventory.InventorySession.CurrentRun.ReactionIds.SequenceEqual(Enumerable.Range(1000, 9)), "Enter Game passes an explicit loadout snapshot.");
     System.IO.File.WriteAllText("Temp/InventoryChecks/Runtime.txt", "PASS: " + checks + " drag, ghost, autosave, UI, and handoff assertions.");
 } finally {
     controller.CancelDrag();

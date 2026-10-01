@@ -14,7 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Inventory.InventoryItemDefinition
   itemId: fire_interactions
   displayName: Fire Interactions
-  packageId: 101
+  reactionIds:
+  - 1009
+  - 1010
+  - 1011
+  - 1012
+  - 1013
+  - 1014
+  placementElement: 0
   color: {r: 1, g: 0.68, b: 0.28, a: 1}
   sprite: {fileID: 7482667652216324306, guid: 2fe4ac3dd670d7942b7df782fd9624c8, type: 3}
   shape:

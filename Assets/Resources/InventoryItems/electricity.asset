@@ -14,7 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Inventory.InventoryItemDefinition
   itemId: electricity
   displayName: Fundamental Electricity
-  packageId: 300
+  reactionIds:
+  - 3000
+  - 3001
+  - 3002
+  - 3003
+  placementElement: 300
   color: {r: 0.78, g: 0.53, b: 1, a: 1}
   sprite: {fileID: 7482667652216324306, guid: 2fe4ac3dd670d7942b7df782fd9624c8, type: 3}
   shape:
