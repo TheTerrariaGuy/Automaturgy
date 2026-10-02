@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "Grid Mage/Particle Catalog")]
+[CreateAssetMenu(menuName = "Automaturgy/Particle Catalog")]
 public class ParticleCatalog : ScriptableObject
 {
     [Serializable] public struct TileEntry

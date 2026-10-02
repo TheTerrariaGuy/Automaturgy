@@ -12,7 +12,7 @@ using Object = UnityEngine.Object;
 public static class ParticlePixelationChecks
 {
     private static readonly CheckSupport.Runner runner = new();
-    [MenuItem("Tools/Grid Mage/Rendering/Check particle pixelation")]
+    [MenuItem("Tools/Automaturgy/Rendering/Check particle pixelation")]
     public static void Run() => runner.Start(RunChecks(), "Temp/ParticlePixelationChecks");
 
     private static IEnumerator RunChecks()

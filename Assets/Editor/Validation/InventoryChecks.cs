@@ -18,7 +18,7 @@ public static class InventoryChecks
         Require(rejected, message);
     }
 
-    [MenuItem("Tools/Grid Mage/Validation/Check inventory")]
+    [MenuItem("Tools/Automaturgy/Validation/Check inventory")]
     public static void Run()
     {
         assertions = 0;

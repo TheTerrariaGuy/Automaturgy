@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Assets.Scripts.Inventory
 {
-    [CreateAssetMenu(fileName = "Reaction Block", menuName = "Grid Mage/Inventory/Reaction Block")]
+    [CreateAssetMenu(fileName = "Reaction Block", menuName = "Automaturgy/Inventory/Reaction Block")]
     public sealed class InventoryItemDefinition : ScriptableObject
     {
         public string itemId;

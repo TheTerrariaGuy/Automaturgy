@@ -1,14 +1,14 @@
 # Stone sprite map
 
-Assign sprites in Assets/Rendering/ElementSprites.asset. Keys are `tile type * 100 + variant`; gameplay IDs are unchanged. Base stone entries reference RockWall sprites; spent stone inherits them through the existing family fallback. Types 400 and 401 connect to each other. Lava (410/411), empty cells, and cells outside the grid do not connect.
+Assign sprites in Assets/Rendering/ElementSprites.asset. Keys are `tile type * 100 + variant`. Base stone entries reference RockWall sprites; spent stone inherits them through the family fallback. Types 400 and 401 connect to each other. Lava (410/411), empty cells, and cells outside the grid do not connect.
 
-`40000` / `40100` remain the default surface. Clearing a shape entry uses its corresponding default. Shape entries take priority over these defaults.
+`40000` / `40100` are the default surface keys. Clearing a shape entry uses its corresponding default. Shape entries take priority over these defaults.
 
 ## Surface shapes
 
 Rows below are mini 3-by-3 neighborhoods, read top to bottom (north to south), with `/` separating rows. `@` is this tile, `#` is connected stone, `.` is an empty/non-stone neighbor, and `?` is a diagonal that does not affect this shape. A diagonal matters only when both adjacent cardinal neighbors are stone. This yields 47 distinct shapes, including thin L/T/cross connections, filled corners, inner corners, edges, and solid interiors.
 
-These IDs describe topology, **not the numeric suffixes of RockWall sprite names**. Pick the artwork matching each neighborhood. The RockWall sheet includes its own south-facing rock faces. The scene uses Wall Height = 0 to display those tiles without a vertical offset. Separate wall-front renderers and sprite slots are no longer used.
+These IDs describe topology, **not the numeric suffixes of RockWall sprite names**. Pick the artwork matching each neighborhood. The RockWall sheet includes its own south-facing rock faces. The scene uses Wall Height = 0 to display those tiles without a vertical offset.
 
 | 400 key | 401 key | Neighborhood (N / center / S) | Connections / filled diagonals | Assigned sprite |
 |---|---|---|---|---|
@@ -61,4 +61,3 @@ These IDs describe topology, **not the numeric suffixes of RockWall sprite names
 | 40048 | 40148 | `###/#@#/###` | N, E, S, W; filled diagonals: NE, SE, SW, NW | RockWall_11 |
 
 Changing a cell refreshes it and all eight neighbors, including diagonal corners. Repeated combat updates select shapes from the current gameplay grid, not partially updated Tile components.
-

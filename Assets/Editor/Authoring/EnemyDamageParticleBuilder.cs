@@ -4,7 +4,7 @@ using UnityEngine;
 
 public static class EnemyDamageParticleBuilder
 {
-    [MenuItem("Tools/Grid Mage/Particles/Rebuild enemy damage effects")]
+    [MenuItem("Tools/Automaturgy/Particles/Rebuild enemy damage effects")]
     public static void Build()
     {
         var catalog = AssetDatabase.LoadAssetAtPath<ParticleCatalog>("Assets/Rendering/Particles/ParticleCatalog.asset");

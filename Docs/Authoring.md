@@ -13,7 +13,8 @@
 | Assets/Scripts/Presentation/Particles | Particle catalog, pattern, pixelation, playback |
 | Assets/Scripts/Input | Pointer interaction |
 | Assets/Scripts/UI | Selection presentation and mana bar |
-| Assets/Data/Elements | Legacy reaction comparison fixture |
+| Assets/Data/Elements | Reaction comparison fixture |
+| Assets/Resources/Spells.txt | Authored reaction rules compiled at startup |
 | Assets/Scripts/Inventory | Inventory state, persistence, Tilemap views, and dragging |
 | Assets/Resources/InventoryItems | Editable reaction block definitions |
 | Assets/Data/Enemies | EnemyData assets |
@@ -26,21 +27,21 @@
 | Assets/Editor/Migrations | Existing-level conversion and rendering setup |
 | Assets/Editor/Validation | Regression checks and temporary fixtures |
 
-The painted level is still serialized inside In Game.unity. No empty Maps folder or duplicated map asset was introduced. Third-party artwork and TextMesh Pro remain in their existing folders.
+The painted level is serialized inside `Assets/Scenes/In Game.unity`. Keep Unity assets paired with their `.meta` files when moving them so serialized references retain their GUIDs.
 
 ## Add or tune an element stage
 
-Edit ElementDefinitions once for alpha, damage, placement cost, decay effect, or default reaction priority. Use the existing family encoding unless intentionally changing the protocol.
+Edit ElementDefinitions for alpha, damage, placement cost, decay effect, or default reaction priority. See [combat rules](Combat.md) for element family and stage encoding.
 
 If the stage has special artwork, add an override to Assets/Rendering/ElementSprites.asset. Otherwise let it inherit its family shape. If it emits particles, add/update its ParticleCatalog tile entry.
 
-A stage needs a positive ManaCost and an equipped block granting that placement element to be an available queued placement type. The selector exposes the existing four element keys, restricted by the active loadout.
+A stage needs a positive ManaCost and an equipped block granting that placement element to be an available queued placement type. The selector exposes four element keys, restricted by the active loadout.
 
-Player cast range, Blink range, cooldown, and mana cost are serialized on PlayerHandler. The migration copied their prior values from Indexing/GameLogic. Blink animation duration remains the existing blinkSpeed field.
+Player cast range, Blink range, cooldown, and mana cost are serialized on PlayerHandler. Blink animation duration is controlled by blinkSpeed.
 
 ## Author a reaction
 
-Edit Assets/Resources/Spells.txt, the TextAsset assigned to the Bootstrap component. Bootstrap compiles it before opening Inventory. See [inventory and reaction grants](../Inventory.md) for individual reaction grants and item authoring. Reactions.txt is retained as a legacy comparison fixture.
+Edit Assets/Resources/Spells.txt, the TextAsset assigned to the Bootstrap component. Bootstrap compiles it before opening Inventory. See [inventory and reaction grants](Inventory.md) for individual reaction grants and item authoring. Assets/Data/Elements/Reactions.txt is a test comparison fixture.
 
 Each rule occupies one line below an element header:
 
@@ -57,40 +58,40 @@ R 1015 V Effect_Name I (1+2,0,20.-203) O (0,0,0) (1+2,0,210) D (0+1+2+3) E
 - E ends the rule.
 - Empty lines, START/END lines, and lines beginning with # are accepted.
 
-The parser validates tuple structure, known types, family requirements, directions, required sections, and trailing tokens. Errors include source, line number, and field. See the inventory guide for signed literals, expansion limits, and startup behavior.
+The parser validates tuple structure, known types, family requirements, directions, required sections, and trailing tokens. Errors include source, line number, and field. See the [inventory guide](Inventory.md) for captured variables, signed literals, expansion limits, and startup behavior.
 
 Add the corresponding prefab/catalog entry when using a new V identifier. Catalog validation checks those cross-references before accepting authored content. A missing effect should be intentional, represented by omitting V.
 
 ## Sprite catalog
 
-SpriteCatalog stores key/value entries and constructs its lookup on demand. Keys remain type * 100 + variant:
+SpriteCatalog stores key/value entries and constructs its lookup on demand. Keys are type * 100 + variant:
 
 - 0: default surface.
 - 2: isolated preview.
-- 2–48: connected shapes, following the existing sprite-map documents.
+- 2–48: connected shapes, following the [element](ElementSpriteMap.md) and [stone](StoneSpriteMap.md) sprite maps.
 
 TextureHandler first checks the exact type/variant, then a connected family's variant, then the exact type's default, then its fallback sprite.
 
-The migration removed 72 entries that already matched the family fallback, leaving 229. In particular, all 48 spent-stone entries inherit stone artwork. Explicit steam-stage entries and other actual differences remain.
+Use overrides only where artwork differs from the family fallback. Spent-stone variants inherit stone artwork; steam stages use explicit entries.
 
 Validate reports duplicate keys, null sprites, and missing isolated previews for the four selectable elements. TextureHandler handles world fitting, color, and sorting; catalog authoring does not resize colliders.
 
 ## Particle authoring
 
-All effect prefabs now live beside the particle catalog under Assets/Rendering/Particles/Prefabs. Shared tile-stage prefabs and their pooling behavior are unchanged.
+Effect prefabs live beside the particle catalog under Assets/Rendering/Particles/Prefabs. Tile stages share family prefabs and pools; see [particle authoring and catalog](Particles/README.md).
 
 ParticlePrefabAuthoring.Bake adds ground anchors to new hierarchies. Existing baked hierarchies are left intact. Keep multi-cell links split into one-cell edges and keep authored anchors synchronized with pattern cells.
 
 EnemyDamageParticleBuilder rebuilds the four damage effects and updates their catalog entries. Rebuilding intentionally replaces those generated prefabs.
 
-The retired grass-particle material/mesh and inactive water-diagonal reaction were removed. GrassWind is the active tile-based grass animation. The particle shader no longer contains its unused grass-sway parameters or calculations.
+GrassWind animates grass tiles. Grass has no particle catalog entry.
 
 ## Levels and editor commands
 
-Continue painting artwork separately from terrain/spawn markers. Marker elevation remains a finite multiple of 0.5, and a valid level has exactly one player marker.
+Paint artwork separately from terrain/spawn markers. Marker elevation must be a finite multiple of 0.5, and a valid level has exactly one player marker. See [level authoring](TilemapLevels.md) for palettes, terrain flags, and spawn settings.
 
-PaletteAuthoring centralizes loading, painting, saving, and unloading palette prefabs. TilemapLevelSetup remains a conversion tool for a rectangular fallback board. ElevationLevelSetup creates elevation markers and the palette and can replace standard floor markers.
+PaletteAuthoring handles loading, painting, saving, and unloading palette prefabs. TilemapLevelSetup converts a rectangular fallback board to tilemaps. ElevationLevelSetup creates elevation markers and the palette and can replace standard floor markers.
 
-WorldRenderingSetup now acts on the active gameplay scene and checks required objects, sprites, prefabs, renderer data, and shader before changing settings. It marks the scene dirty for review rather than automatically saving it. Its asset/prefab changes remain explicit effects of running the setup command.
+WorldRenderingSetup acts on the active gameplay scene and checks required objects, sprites, prefabs, renderer data, and shader before changing settings. It marks the scene dirty for review and updates the required assets and prefabs. Save the scene after reviewing its changes. See [world rendering](WorldRendering.md) for configuration details.
 
-Do not use a setup/migration command as a prerequisite for ordinary regression checks. Existing authored content is already configured; validation builds a temporary fixture.
+Regression checks use configured content and temporary fixtures. See [validation](Validation.md) for required scenes, commands, and outputs.

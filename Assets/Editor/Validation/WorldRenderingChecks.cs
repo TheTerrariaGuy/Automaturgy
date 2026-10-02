@@ -27,7 +27,7 @@ public static class WorldRenderingChecks
         if (SessionState.GetBool(Running, false)) Register();
     }
 
-    [MenuItem("Tools/Grid Mage/Validation/Check world rendering")]
+    [MenuItem("Tools/Automaturgy/Validation/Check world rendering")]
     public static void Run()
     {
         phase = nextFrame = 0;

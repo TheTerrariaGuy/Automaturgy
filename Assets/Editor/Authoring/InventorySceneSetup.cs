@@ -19,7 +19,7 @@ public static class InventorySceneSetup
     private const string ItemFolder = "Assets/Resources/InventoryItems";
     private const string ArtFolder = "Assets/Rendering/Inventory";
 
-    [MenuItem("Tools/Grid Mage/Inventory/Set up inventory scene")]
+    [MenuItem("Tools/Automaturgy/Inventory/Set up inventory scene")]
     public static void Create()
     {
         if (Application.isPlaying) throw new InvalidOperationException("Run inventory setup outside Play mode.");

@@ -8,7 +8,7 @@ using Object = UnityEngine.Object;
 
 public static class TilemapLevelChecks
 {
-    [MenuItem("Tools/Grid Mage/Levels/Check tilemap parsing")]
+    [MenuItem("Tools/Automaturgy/Levels/Check tilemap parsing")]
     public static void Run()
     {
         if (Application.isPlaying) throw new InvalidOperationException("Run parsing checks outside Play mode.");

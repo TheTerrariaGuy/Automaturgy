@@ -9,7 +9,7 @@ using static CheckSupport;
 
 public static class RefactoringChecks
 {
-    [MenuItem("Tools/Grid Mage/Validation/Check refactoring regressions")]
+    [MenuItem("Tools/Automaturgy/Validation/Check refactoring regressions")]
     public static void Run()
     {
         var cases = JArray.Parse(File.ReadAllText("Tests/Refactoring/CombatBaseline.json"));

@@ -85,7 +85,7 @@ public static class WorldRenderingSetup
         data.ApplyModifiedPropertiesWithoutUndo();
     }
 
-    [MenuItem("Tools/Grid Mage/Rendering/Configure Y-sorted world")]
+    [MenuItem("Tools/Automaturgy/Rendering/Configure Y-sorted world")]
     public static void Configure()
     {
         if (Application.isPlaying) throw new InvalidOperationException("Configure rendering outside Play mode.");

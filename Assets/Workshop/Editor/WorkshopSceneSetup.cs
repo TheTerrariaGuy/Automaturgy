@@ -10,7 +10,7 @@ namespace GridMage.Workshop.Editor
     public static class WorkshopSceneSetup
     {
         public const string ScenePath = "Assets/Workshop/Scenes/Workshop.unity";
-        [MenuItem("Tools/Grid Mage/Workshop/Create scene")]
+        [MenuItem("Tools/Automaturgy/Workshop/Create scene")]
         public static void Create()
         {
             if (Application.isPlaying) throw new InvalidOperationException("Create the workshop outside Play mode.");
@@ -40,7 +40,7 @@ namespace GridMage.Workshop.Editor
             }
             AssetDatabase.Refresh();
         }
-        [MenuItem("Tools/Grid Mage/Workshop/Open scene")]
+        [MenuItem("Tools/Automaturgy/Workshop/Open scene")]
         public static void Open()
         {
             Create();

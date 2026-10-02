@@ -19,7 +19,7 @@ public static class SpellCompilerChecks
     private static int[] Set(string expression) => SpellSetExpression.Compile(expression, -1024, 1024);
     private static Reaction[] Rules(string body) => ReactionParser.Parse("FIRE\nR 1000 " + body, requireIds: true)[100].ToArray();
 
-    [MenuItem("Tools/Grid Mage/Validation/Check spell compiler")]
+    [MenuItem("Tools/Automaturgy/Validation/Check spell compiler")]
     public static void Run()
     {
         if (Application.isPlaying) throw new InvalidOperationException("Run compiler checks outside Play mode.");

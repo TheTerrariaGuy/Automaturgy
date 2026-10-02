@@ -21,7 +21,7 @@ public static class SpellVariableChecks
     private static void Resolve(BoardState board, Reaction[] rules) =>
         new ReactionResolver(board, type => type == 100 ? rules : Array.Empty<Reaction>()).Resolve();
 
-    [MenuItem("Tools/Grid Mage/Validation/Check spell variables")]
+    [MenuItem("Tools/Automaturgy/Validation/Check spell variables")]
     public static void Run()
     {
         checks = 0;

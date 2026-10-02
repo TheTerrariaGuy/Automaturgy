@@ -13,7 +13,7 @@ public static class ElevationLevelSetup
     private const string Folder = "Assets/Levels/Markers/Elevation";
     private const string Sheet = "Assets/Textures/__Technical/Elevation.png";
 
-    [MenuItem("Tools/Grid Mage/Levels/Use elevation tiles")]
+    [MenuItem("Tools/Automaturgy/Levels/Use elevation tiles")]
     public static void Configure()
     {
         if (Application.isPlaying) throw new InvalidOperationException("Configure elevation outside Play mode.");

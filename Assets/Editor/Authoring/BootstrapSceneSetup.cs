@@ -8,7 +8,7 @@ using UnityEngine.SceneManagement;
 
 public static class BootstrapSceneSetup
 {
-    [MenuItem("Tools/Grid Mage/Spells/Set up Bootstrap scene")]
+    [MenuItem("Tools/Automaturgy/Spells/Set up Bootstrap scene")]
     public static void Create()
     {
         if (Application.isPlaying) throw new InvalidOperationException("Run Bootstrap setup outside Play mode.");

@@ -12,6 +12,8 @@ The core and rendering suites are editor checks, not NUnit tests, so a Unity Tes
 
 | Entry point | Context | Coverage | Result |
 |---|---|---|---|
+| SpellVariableChecks.Run / SpellCompilerChecks.Run | Edit Mode | Set expressions, captured variables, rotations, priorities, expansion limits, diagnostics, startup failures, and cache reuse | Temp/SpellCompiler/Variables.txt and Temp/SpellCompiler/Results.txt |
+| InventoryChecks.Run | Edit Mode | Reaction grants, ordering, shape collisions, transfers, persistence, and backup recovery | Temp/InventoryChecks/Results.txt |
 | RefactoringChecks.Run | Edit Mode | 160 baseline combat cases, all three phase snapshots, surviving visual ownership, malformed rule input, reservations, grid rays, catalogs, tilemap parsing | Temp/RefactoringChecks/Results.txt |
 | Tests/Refactoring/Runtime.cs | Fresh rectangular fixture Play | Board ownership, unique sprite refresh counts, path-buffer reuse, live spawn occupancy and reset | Returned PASS string |
 | Tests/Refactoring/GrassReset.cs | Gameplay scene, fresh Play | Grass elevation cache on initialization and two authored-height resets | Returned PASS string |
@@ -32,7 +34,7 @@ The core and rendering suites are editor checks, not NUnit tests, so a Unity Tes
 
 ## Running editor suites
 
-Use Tools > Grid Mage for the validation menu items, or execute the following method bodies using MCP execute_code:
+Use Tools > Automaturgy for the validation menu items, or execute the following method bodies using MCP execute_code:
 
 ```csharp
 RefactoringChecks.Run();
@@ -54,7 +56,7 @@ CheckSupport.Runner handles editor iteration, final result reporting, and iterat
 
 ## Runtime fixtures
 
-WorldRenderingChecks builds its fixture automatically. For the Blink scripts and outline lifecycle check, first execute in Edit Mode:
+WorldRenderingChecks builds its fixture automatically. For scripts marked as requiring a rectangular fixture and the outline lifecycle check, first execute in Edit Mode:
 
 ```csharp
 ValidationFixture.Open();
@@ -74,6 +76,8 @@ The fixture rejects unsaved scene edits before opening. It never saves its gener
 
 Elevation and tilemap runtime scripts instead need an assigned TilemapLevel. Open Assets/Scenes/In Game.unity before their fresh Play sessions. They paint temporary runtime maps and must also be discarded by stopping Play.
 
+For inventory pointer, preview, save, scene handoff, and Bootstrap startup checks, follow the [inventory test instructions](../Tests/Inventory/README.md). These checks use isolated saves under Temp/InventoryChecks.
+
 ## Standalone shape checks
 
 ```powershell
@@ -84,7 +88,7 @@ This project links the actual TileSpriteLayout, GridMath, and ElementState sourc
 
 ## Baseline provenance
 
-Tests/Refactoring/CombatBaseline.json was captured before the refactor from commit e38d584 using seed 71621.
+Tests/Refactoring/CombatBaseline.json contains reference results captured from commit e38d584 using seed 71621. Keep these independently captured expectations separate from the implementation under test.
 
 Each of 160 cases contains a 12-by-12 input, existence/elevation arrays, expected output after each phase, and the surviving visual events with their owned cells. Cases combine all current element stages, missing cells, and height discontinuities.
 
@@ -103,4 +107,10 @@ Additional tests use explicit examples and malformed inputs. These cover behavio
 - GPU mismatch: inspect captured PNGs, active rendering settings, and material import errors.
 - Fixture failure: stop Play if needed, call Restore, inspect the exception, and do not save temporary test changes.
 
-Current implementation-session results are recorded in Verification.md.
+## Coverage and interpretation
+
+The combat baseline covers 160 cases and 480 phase snapshots. Explicit terrain, corner, queue, and runtime tests supplement it; the sample does not cover every possible board.
+
+Presentation and routing checks verify sprite refresh counts and buffer reuse. They do not measure frame time, memory usage, or target-platform performance. GPU results apply to the graphics configuration used for the run; validate other graphics APIs and standalone builds separately.
+
+Generated result files and rendering captures belong under Temp. Consult each suite's output for the result of a run.

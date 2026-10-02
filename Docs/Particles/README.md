@@ -1,16 +1,16 @@
 # Tile and reaction particles
 
-`Assets/Particle` contains seven looping tile family prefabs (27 catalog stages), 20 one-shot reaction prefabs and four enemy damage prefabs, authored for the XY grid. All visible children use layer `PixelVFX` (6), which renders alongside sprites through `Main Camera`. Their shared `Element Particle` shader pixelates only effects on a screen-aligned grid.
+`Assets/Rendering/Particles/Prefabs` contains seven looping tile family prefabs (27 catalog stages), 19 one-shot reaction prefabs and four enemy damage prefabs, authored for the XY grid. All visible children use layer `PixelVFX` (6), which renders alongside sprites through `Main Camera`. Their shared `Element Particle` shader pixelates effects on a screen-aligned grid.
 
-Shared meshes, materials, shader and catalog live in `Assets/Rendering/Particles`. Authoring and validation scripts live in `Assets/Editor/Rendering`. Documentation and previews live here in `Docs/Particles`. None of the authoring tools or previews are required for playback.
+Shared meshes, materials, shader and catalog live in `Assets/Rendering/Particles`. Authoring scripts live in `Assets/Editor/Authoring`; validation scripts live in `Assets/Editor/Validation`. Documentation and previews live here in `Docs/Particles`. None of the authoring tools or previews are required for playback.
 
-Historical preview sheets: [tiles](Previews/Tiles.png), [tiles with the former pixel filter](Previews/Tiles_Pixel.png), [reactions](Previews/Reactions.png). Entries run left to right, top to bottom, in filename order; matching `.txt` files list each entry. These show the authored effects before screen-space shader pixelation. The current shader measures cells in game pixels at 16 pixels per world unit, scaling with camera zoom and resolution; see the updated [rendering example](../Rendering/Particle6px.png).
+Preview sheets: [tiles](Previews/Tiles.png), [pixelated tiles](Previews/Tiles_Pixel.png), [reactions](Previews/Reactions.png). Entries run left to right, top to bottom, in filename order; matching `.txt` files list each entry. These are artwork references and can include effects outside the active catalog. Use the catalog tables below for playback configuration. The shader measures cells in game pixels at 16 pixels per world unit, scaling with camera zoom and resolution; see the [rendering example](../Rendering/Particle6px.png).
 
-Tile effects occupy a centered 1 × 1 square. Place a tile prefab under its tile with local position zero, rotation identity and scale one; it inherits the tile's transform. Emission covers the square surface, with restrained drift and particle sizes suitable for the point-filtered render texture. Shared unlit materials use particle color and preserve render-target alpha. Mesh silhouettes provide flames, blades, droplets, wavelets, rings and angular bolts without texture dependencies.
+Tile effects occupy a centered 1 × 1 square. Place a tile prefab under its tile with local position zero, rotation identity and scale one; it inherits the tile's transform. Emission covers the square surface, with restrained drift and particle sizes suitable for the pixelated display. Shared unlit materials use particle color and preserve render-target alpha. Mesh silhouettes provide flames, blades, droplets, wavelets, rings and angular bolts without texture dependencies.
 
 All tile emitters are centered at tile-local X/Y zero. Every active emission shape is an unrotated 1 × 1 rectangle centered at zero, spanning −0.5 to +0.5 on both axes. Particle size and movement can extend beyond the emission area. Runtime playback preserves the prefab's authored root scale.
 
-Grass (tile type 0) intentionally has no particle catalog entry. Returning an elemental tile to grass releases its effect. Missing prefab references are treated as no effect during playback. Historical preview sheets still include the removed grass effect.
+Grass (tile type 0) intentionally has no particle catalog entry. Returning an elemental tile to grass releases its effect. Missing prefab references are treated as no effect during playback.
 
 ## Tiles
 
@@ -26,7 +26,7 @@ Grass (tile type 0) intentionally has no particle catalog entry. Returning an el
 | 410, 411 | `Tile_410_Lava` | Orange molten pools, bubbling currents and growing dark crust |
 | 400, 401 | No prefab | Ordinary stone emits no particles |
 
-Historical preview labels refer to the original per-stage prefabs. Those stages now live in `ParticleCatalog`; the seven base prefab filenames and GUIDs are retained.
+`ParticleCatalog` defines each stage's appearance using the seven shared family prefabs.
 
 ## Reactions
 
@@ -51,14 +51,14 @@ Names below have the `Reaction_` prefix and `.prefab` extension, under `Assets/R
 | Electricity `302 → 0` | `Electricity_Discharge` | Last arcs snap away, followed by residual ions |
 | Fade map `110 → 111` | `Fire_Flare_Decay` | Golden flame puffs in four neighboring cells |
 | Fade map `210 → 211` | `Water_Steam_Decay` | Steam dissipates into four neighboring cells |
-| Fade map `310 → 311` | `Electricity_Charge_Decay` | Smaller plasma blooms dissipate into four neighboring cells; existing filename retained |
+| Fade map `310 → 311` | `Electricity_Charge_Decay` | Smaller plasma blooms dissipate into four neighboring cells |
 | Fade map `410 → 411` | `Lava_Cooling_Decay` | Lava spreads to four neighboring cells and cools into dark crust |
 
 The intermediate fire transitions `101 → 102 → … → 107` and electricity `301 → 302` use the corresponding tile-state prefabs; they do not need a fresh explosion on each tick. Water's commented-out `201 → … → 207 → 0` rules are not active reactions. The commented-out diagonal fire–electricity overlap rule is also excluded.
 
 ## Plasma and lava patterns
 
-All four previously unclear reactions now use the confirmed plasma and lava themes. Their visuals preserve the source's distinct output patterns:
+Fire–electricity reactions produce plasma, and fire–stone reactions produce lava. Their visuals follow each rule's output pattern:
 
 | Casting family + requirement | Actual outputs | Visual treatment |
 | --- | --- | --- |
@@ -80,7 +80,7 @@ All four previously unclear reactions now use the confirmed plasma and lava them
 
 The `damage` entries in `ParticleCatalog` map element families to these prefabs. Hits use the same pool as other one-shot effects. They follow the enemy's position, sort immediately over its feet anchor in the World layer, and finish at the last position if the enemy dies. Grid reset clears active hits. Typical particle lifetimes are 0.15–0.75 seconds.
 
-`Tools > Grid Mage > Particles > Rebuild enemy damage effects` regenerates only these four prefabs and updates their catalog entries. The builder is `Assets/Editor/Authoring/EnemyDamageParticleBuilder.cs`. `EnemyDamageChecks` runs with the world rendering checks and covers all four damage sources, overlapping elements, duplicate electrical hits, pool reuse, movement, lethal hits and cleanup.
+`Tools > Automaturgy > Particles > Rebuild enemy damage effects` regenerates only these four prefabs and updates their catalog entries. The builder is `Assets/Editor/Authoring/EnemyDamageParticleBuilder.cs`. `EnemyDamageChecks` runs with the world rendering checks and covers all four damage sources, overlapping elements, duplicate electrical hits, pool reuse, movement, lethal hits and cleanup.
 
 [Damage preview, left to right: fire, water, electricity, lava](../Rendering/EnemyDamage.png)
 
@@ -94,7 +94,7 @@ Reaction rules carry a `V` effect name and direction in `Assets/Resources/Spells
 
 Each reaction prefab's `ParticlePattern` lists destination cells and bolt endpoints. `ParticleVFX` masks rejected groups before playback, starts only visible systems, and returns completed effects to the pool. A bolt needs both endpoints to survive, except its casting origin. Lava conversions may reach a stone destination; intervening stone still blocks them.
 
-Reaction roots sit at the casting/source cell, not the contacted cell. Their children already include grid offsets at spacing 1. Parent the root to `gridParent`, set its local position to the source tile center, and set uniform scale to `GameLogic.spacing`. To match `Indexing.Rotate(..., direction)`, rotate the root around Z by **−90 × direction** degrees, since `GridHelper` inverts grid y. Do not scale each child separately.
+Reaction roots sit at the casting/source cell, not the contacted cell. Their children include grid offsets at spacing 1. Parent the root to `gridParent`, set its local position to the source tile center, and set uniform scale to `GameLogic.spacing`. To match `GridMath.Rotate(x, y, direction)`, rotate the root around Z by **−90 × direction** degrees, since `GridHelper` inverts grid y. Do not scale each child separately.
 
 Geyser reactions (`Fire_Water_Cardinal_Geyser` and `Fire_Water_Overlap_SteamRing`) keep their emitters facing world up. Cast direction rotates their destination layout without tilting the jets or steam. This is controlled by `ParticlePattern.keepEmittersUpright` and reapplied on pooled playback.
 
@@ -106,8 +106,6 @@ Edit shared emitter geometry and motion in the seven tile prefabs; edit stage sc
 
 Sorting anchors are saved in every catalog prefab. `ParticlePrefabAuthoring.Bake` builds anchors for a newly authored hierarchy: tile systems share a center anchor, reaction parts use destination or link-midpoint anchors, and damage effects use a single anchor with a `Visuals` child. The enemy damage builder calls this before saving its prefabs. Runtime playback does not create or rearrange sorting groups. When editing a reaction layout, keep its saved anchors aligned with `ParticlePattern` cells.
 
-Run `WorldRenderingChecks.Run` in an isolated project using `-batchmode -executeMethod WorldRenderingChecks.Run -logFile Validation.log` (omit `-quit`; checks exit Unity themselves). Checks cover all 27 tile stages and seven shared pools, saved anchors, rotated reactions, upright geysers, damage effects, movement, lethal hits, cleanup, particle/sprite occlusion, tile picking and grid reset. Results and screenshots are saved under `WorldRenderingChecks` in that project.
+Run `WorldRenderingChecks.Run` in an isolated project using `-batchmode -executeMethod WorldRenderingChecks.Run -logFile Validation.log` (omit `-quit`; checks exit Unity themselves). Checks cover all 27 tile stages and seven shared pools, saved anchors, rotated reactions, upright geysers, damage effects, movement, lethal hits, cleanup, particle/sprite occlusion, tile picking and grid reset. Results and screenshots are saved under `Temp/WorldRenderingChecks` in that project. See [validation](../Validation.md) for fixture requirements and other suites.
 
-Preview sheets are historical authoring snapshots and are not regenerated by the damage rebuild menu.
-
-The inactive water-diagonal effect and retired grass-particle assets were removed during the [refactor](../Refactoring/Migration.md). Historical preview sheets may still show them.
+The damage rebuild menu updates prefabs and catalog entries; preview sheets are maintained separately.

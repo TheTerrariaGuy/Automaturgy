@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "Grid Mage/Sprite Catalog")]
+[CreateAssetMenu(menuName = "Automaturgy/Sprite Catalog")]
 public sealed class SpriteCatalog : ScriptableObject
 {
     [Serializable] public struct Entry { public int key; public Sprite value; }

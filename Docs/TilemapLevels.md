@@ -7,18 +7,18 @@ Terrain/spawn assets live in `Assets/Levels/Markers`; art tiles live in `Assets/
 
 ## Elevation
 
-In Game now uses numbered elevation tiles on **Logic** in place of the flat Floor
-markers. Select **Elevation Palette** to paint heights. White `n` means `n`; blue `n`
+In Game uses numbered elevation tiles on **Logic**.
+Select **Elevation Palette** to paint heights. White `n` means `n`; blue `n`
 means `n + 0.5`. The assets in `Assets/Levels/Markers/Elevation` cover 1 through 8.5.
 The sheet rows are white 1–4, blue 1–4, white 5–8, blue 5–8. The palette groups
 white 1–8 on its first row and blue 1–8 on its second row.
-Numbered base floor cells and default spawn markers start at 1; paint ramps and cliffs as needed. Background artwork
-and spawn locations are preserved. Logic numbers remain editor markers, hidden in Play mode.
+Numbered base floor cells and default spawn markers start at 1; paint ramps and cliffs as needed.
+Logic numbers are editor markers, hidden in Play mode.
 
 Every Level Marker, including a spawn or wall marker, has an **Elevation** property.
 Use finite multiples of 0.5. Duplicate a spawn marker to give a particular spawn a
 different height without changing other cells that share the asset. The loader copies
-heights into `GameLogic.elevationGrid[row, col]`; legacy rectangular boards default to 0.
+heights into `GameLogic.elevationGrid[row, col]`; rectangular fallback boards default to 0.
 
 `GridMath.IsElevationDiffOk` permits only -0.5, 0 and +0.5. Blink and reactions visit
 cells in straight-line order and compare consecutive heights, so `1 -> 1.5 -> 2`
@@ -32,17 +32,17 @@ and wandering apply the same height rule to neighboring movement steps; movement
 smoothing cannot cut across an invalid elevation transition.
 
 Elevation checks affect reaction ingredients, outputs, overlap outputs, and decay
-spread. Spell placement and the blue cast region retain their previous elevation-independent rules.
+spread. Spell placement and the blue cast region are independent of elevation.
 
 The **blue** mesh outlines the cast region. The **yellow** mesh outlines valid Blink
 destinations, excluding the player cell, blocked rays and cliffs. Enemy-occupied cells
 remain valid Blink destinations.
-Both the existing cast visibility range and Blink range limit movement destinations.
+Both the cast visibility range and Blink range limit movement destinations.
 These are spatial regions; mana and cooldown are checked when casting. Yellow is
-slightly inset so coincident blue/yellow edges remain visible. Occupancy updates the
-yellow mask between combat ticks; board changes and Blink arrival refresh both regions.
+slightly inset so coincident blue/yellow edges remain visible. Board changes and Blink
+arrival refresh both regions. Enemy movement does not change destination eligibility.
 
-For another scene, **Tools > Grid Mage > Levels > Use elevation tiles** creates the
+For another scene, **Tools > Automaturgy > Levels > Use elevation tiles** creates the
 palette, replaces the standard Floor markers with Elevation 1, and configures both
 outlines. It preserves existing height tiles and spawn/wall markers. Save the scene afterward.
 
@@ -72,15 +72,15 @@ The runtime checks create a temporary board in Play mode; stop Play mode afterwa
 6. Save the scene and enter Play mode. Logic's renderer is hidden, its data is retained,
    and the parsed mask determines where runtime cells are created.
 
-For another existing grid scene, use **Tools > Grid Mage > Levels > Create tilemaps from
+For another existing grid scene, use **Tools > Automaturgy > Levels > Create tilemaps from
 current grid**. It creates and assigns aligned maps, fills the current rectangular board,
-and copies the player coordinates and valid legacy enemy positions. It does not overwrite
+and copies the player coordinates and valid fallback enemy positions. It does not overwrite
 an already assigned level. Save the scene afterward. Scenes without an assigned Level on
-GameLogic retain the old rectangular initialization.
+GameLogic use rectangular fallback initialization.
 
 ## Marker properties
 
-Create variants with **Assets > Create > Grid Mage > Level Marker**, or duplicate an
+Create variants with **Assets > Create > Automaturgy > Level Marker**, or duplicate an
 existing marker asset. Add them to the palette as needed. Each painted marker creates an
 existing cell and independently specifies:
 
@@ -88,7 +88,7 @@ existing cell and independently specifies:
 - **Blocks Sight:** whether targeting and reaction rays can pass through it.
 - **Allows Spells:** whether spells may be placed or written into it.
 - **Spawn Kind:** none, player, or enemy.
-- **Enemy:** the EnemyData asset for that spawn, independent of the legacy enemy type list.
+- **Enemy:** the EnemyData asset for that spawn.
 - **Spawn Interval:** zero for a single attempt at load, positive seconds for repeated attempts.
 
 A spawn must be walkable. Repeating spawners skip attempts while occupied, blocked by a
@@ -131,11 +131,11 @@ authoring workflow; edit the Logic map and reload the board.
 
 ## Checks
 
-- **Tools > Grid Mage > Levels > Check tilemap parsing** runs temporary Edit mode checks.
+- **Tools > Automaturgy > Levels > Check tilemap parsing** runs temporary Edit mode checks.
 - In a fresh In Game Play session, run
   `unity command eval_file --file Tests/TilemapLevel/Runtime.cs --json`, then stop Play mode.
   The runtime check temporarily replaces the board to exercise holes, negative coordinates,
   spawns, pathfinding, spell propagation, rendering flags, and reloads.
 - Existing Blink checks remain under `Tests/Blink`.
 
-Initialization and reset ownership are documented in [Architecture](Refactoring/Architecture.md).
+Initialization and reset ownership are documented in [Architecture](Architecture.md).

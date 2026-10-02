@@ -11,7 +11,7 @@
 | Bootstrap | Compiles the assigned spell TextAsset before loading Inventory | ReactionCatalog |
 | ReactionParser / SpellSetExpression | Compiles set expressions into concrete rotated rules and type lookups | GridMath, ElementDefinitions |
 | ReactionCatalog / RunLoadout | Compiled spell cache and equipped reaction/placement snapshot | ReactionParser |
-| Indexing | Compatibility adapter to the active loadout | InventorySession |
+| Indexing | Scene adapter to the active loadout | InventorySession |
 | InventoryState / InventorySession | Shaped item placements, active reaction and placement grants, saves, and scene handoff | Item definitions, save store |
 | InventoryController / InventoryGridView | Dragging, snapped previews, controls, and Tilemap display | InventoryState |
 | ElementDefinitions | Shared stage alpha, damage, placement cost, default reaction priority, and decay-effect IDs | Plain C# |
@@ -32,11 +32,11 @@
 
 ## Board ownership
 
-BoardState.Cells is the authoritative contents array. GameLogic.grid exposes the same array for existing inspection and test code; it is not another allocation. Similarly, cellExists and elevationGrid expose BoardState's terrain arrays.
+BoardState.Cells is the authoritative contents array. GameLogic.grid exposes the same array for inspection and test code. Similarly, cellExists and elevationGrid expose BoardState's terrain arrays.
 
-Use BoardState.Set for individual production writes and Replace for complete, matching-size snapshots. Direct array edits remain supported by the existing diagnostic scripts, but callers must explicitly refresh presentation and spatial masks afterward. This is not a fully immutable board API.
+Use BoardState.Set for individual production writes and Replace for complete, matching-size snapshots. Diagnostic scripts can edit arrays directly. After any board mutation, callers must refresh presentation and spatial masks through GameLogic.
 
-Tile.type now reads the board. It cannot be assigned independently. The only cached type on a tile is lastRenderedType, used to avoid replaying an unchanged particle stage. A tile's row and col are initialized once and exposed with private setters.
+Tile.type reads the board and cannot be assigned independently. The only cached type on a tile is lastRenderedType, used to avoid replaying an unchanged particle stage. A tile's row and col are initialized once and exposed with private setters.
 
 TilemapLevel.Layout and BoardState share the initialized terrain arrays. Marker assets are copied by the level reader first, so gameplay edits do not mutate shared LevelMarkerTile assets.
 
@@ -58,9 +58,9 @@ InitializeGrid performs:
 8. Synchronize tile presentation and spatial regions.
 9. Raise LevelInitialized.
 
-PlayerHandler and MobHandler no longer independently reset themselves in Start. This removes repeated initialization and region rebuilds. GrassWind subscribes to LevelInitialized, refreshing its elevation cache after subsequent resets as well as the initial load.
+GameLogic owns player and enemy reset sequencing. GrassWind subscribes to LevelInitialized, refreshing its elevation cache after each reset and the initial load.
 
-A scene with no assigned level retains the existing rectangular fallback and legacy enemy placements. LegacyLevelDefaults shares those coordinates with the level-conversion tool, preserving spawn order. The fallback is also used by validation fixtures.
+A scene with no assigned level uses a rectangular fallback board. LegacyLevelDefaults supplies enemy coordinates and spawn order to both the fallback and the level-conversion tool. Validation fixtures also use the fallback.
 
 ## Combat-to-presentation flow
 
@@ -68,7 +68,7 @@ GameLogic.TickCombat calls ReactionResolver.Resolve. The resolver replaces board
 
 After all phases, TilePresentation compares each cell's type with its last presented stage. Changed tiles update their particle handle, and their 3-by-3 neighborhoods enter a HashSet. TextureHandler.ApplyTexture runs once for each unique affected sprite against the final board.
 
-This retains an O(board cells) change-detection scan. It removes repeated sprite work without introducing a fragile dirty flag at every existing array write. A future mutation-only board API could provide a direct changed-cell list.
+Change detection scans all board cells. An unchanged board performs zero sprite refreshes. One changed interior cell refreshes nine sprites; two adjacent changed cells refresh twelve unique sprites. A corner change refreshes four existing sprites.
 
 UpdateTile is the immediate single-cell path, used by authoring checks and diagnostics. UpdateTiles is the batched path used by combat and queue submission.
 
@@ -76,11 +76,11 @@ UpdateTile is the immediate single-cell path, used by authoring checks and diagn
 
 Blink eligibility and its outline share GameLogic.moveableGrid, computed from range, visibility, walkability and elevation in MakeCastable. Enemies do not block Blink destinations, so enemy movement does not trigger outline updates.
 
-MobHandler.IsOccupied checks live, active enemies when a spawner attempts a spawn. There is no occupancy cache, version counter or movement invalidation hook. Direct position and enabled-state changes are visible immediately. Spawns still reject cells occupied by an enemy or the player.
+MobHandler.IsOccupied checks live, active enemies when a spawner attempts a spawn. Direct position and enabled-state changes are visible immediately. Spawns reject cells occupied by an enemy or the player.
 
-Path fields still rebuild on the same ticks and player moves as before, keeping randomized channel behavior. The implementation reuses the path array when dimensions match, a frontier queue, a four-neighbor list, candidate arrays, and a visited array with generation counters. No wall-array clone is needed per channel.
+Path fields rebuild on combat ticks and player moves, using randomized channels. The implementation reuses the path array when dimensions match, a frontier queue, a four-neighbor list, candidate arrays, and a visited array with generation counters. Channels share the wall array.
 
-NextStep is an immutable value type. IsValid is false for the default zero step, replacing the old null sentinel. Path disagreement inspection uses enumeration rather than draining and reconstructing a queue.
+NextStep is an immutable value type. Check IsValid before using a step; it is false for the default zero step. Path disagreement inspection enumerates the queue without modifying it.
 
 ## Coordinates
 

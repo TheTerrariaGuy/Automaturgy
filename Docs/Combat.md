@@ -1,8 +1,6 @@
-# Combat rules and preserved invariants
+# Combat rules
 
 ## Element IDs
-
-IDs remain unchanged.
 
 | Family | Base | Reactive stages | First/second reaction stages |
 |---|---:|---|---|
@@ -13,7 +11,7 @@ IDs remain unchanged.
 
 ElementState provides named family/stage interpretation. A reactive state has an ID of at least 100 and a suffix below 10. First reaction stages have suffix 10; spent effects have suffix 11. Ordinary stone blocks walking and sight. Lava does not use the ordinary-stone wall classification.
 
-ElementDefinitions retains the existing numeric damage, alpha, and mana values. Water 202–207 definitions remain for compatibility even though current reaction text does not produce them. Definitions are distinct from reachable states.
+ElementDefinitions supplies damage, alpha, mana cost, decay effects, and default reaction priority. Water 202–207 have definitions, although the authored reaction text does not produce them. Definitions are distinct from reachable states.
 
 ## Resolution order
 
@@ -21,7 +19,7 @@ ElementDefinitions retains the existing numeric damage, alpha, and mana values. 
 
 Clone the incoming board. First clear old spent effects on existing cells. Then visit fading origins in row-major order and inspect the original phase snapshot.
 
-All four fading types share cardinal geometry. A target is eligible only when terrain permits spells and the elevation ray passes. Replacement rules preserve the previous implementation:
+All four fading types share cardinal geometry. A target is eligible only when terrain permits spells and the elevation ray passes. Replacement rules are:
 
 - Empty/non-element targets and spent effects may be replaced.
 - Steam decay can replace fire-family states.
@@ -47,7 +45,7 @@ The same output queue/apply implementation handles ordinary and overlap phases. 
 
 Output priorities are baked at startup from the output tile definition unless the spell supplies an explicit fourth tuple field. Outputs are sorted by ascending priority and then ascending insertion order. They are applied in that order, so the later accepted write wins.
 
-Insertion order follows row-major origins, authored rule order, direction order, and output order. List.Sort uses the same total comparator formerly used by SortedSet. No equal insertion orders are generated within a phase.
+Insertion order follows row-major origins, authored rule order, direction order, and output order. Each output has a unique insertion order within its phase.
 
 Walls are extracted once when applying a phase. Writes within that phase do not change its wall snapshot. Each phase clones its input, so the overlap snapshot can be retained by reference instead of cloned again.
 
@@ -65,12 +63,12 @@ This prevents losing reactions or superseded writes from displaying effects they
 
 SpellQueue records one spell and its original cost per queued coordinate. Reserved mana is the sum of those costs. Removing the last spell explicitly resets the reservation to zero.
 
-GameLogic exposes spendable mana as max(0, current mana minus reservations). Regeneration retains its existing placement multiplier and maximum of max mana plus reservations.
+GameLogic exposes spendable mana as max(0, current mana minus reservations). Regeneration uses a placement multiplier and a maximum of max mana plus reservations.
 
 Submitting:
 
 1. Invalidates queued cells against current terrain/state.
-2. Requires a nonempty queue and the existing five-mana submission charge.
+2. Requires a nonempty queue and the five-mana submission charge.
 3. Charges reserved costs plus the submission charge.
 4. Applies all queued types.
 5. Clears reservations/previews and performs one presentation batch.
@@ -89,4 +87,4 @@ The wall ray allows an exact corner when at least one side is open. Elevation pe
 
 Wall and elevation tests remain independent. The open side for one test need not be the same side as for the other. Lava's target-wall exception does not bypass intermediate walls or the two-side corner rule.
 
-Enemy movement still uses cardinal path steps, wandering, lookahead, and the existing smoothing rules. The scalar velocity cap preserves the prior vector magnitude, sqrt(3) times speed.
+Enemy movement uses cardinal path steps, wandering, lookahead, and smoothing. The scalar velocity cap is sqrt(3) times speed.

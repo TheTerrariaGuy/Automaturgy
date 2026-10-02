@@ -12,7 +12,7 @@ namespace GridMage.Workshop.Editor
     /// <summary>Runs against the actual workshop UI in Play mode; leaves no saved test draft.</summary>
     public static class WorkshopPlayChecks
     {
-        [UnityEditor.MenuItem("Tools/Grid Mage/Workshop/Run Play-mode checks")]
+        [UnityEditor.MenuItem("Tools/Automaturgy/Workshop/Run Play-mode checks")]
         public static void RunMenu() => Debug.Log(Run());
 
         public static string Run()

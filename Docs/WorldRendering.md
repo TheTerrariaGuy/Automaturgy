@@ -1,6 +1,6 @@
 # World rendering and Y sorting
 
-`Main Camera` renders tiles, walls, characters, particles and the HUD directly at display resolution. Particles and the castable-area outline use screen-space pixelation. The old low-resolution camera, render texture, output canvas and `PixelWorldRenderer` have been removed.
+`Main Camera` renders tiles, walls, characters, particles and the HUD directly at display resolution. Particles and the castable-area outline use screen-space pixelation.
 
 `ParticlePixelation` on `Main Camera` controls **Pixel Size**, measured in game pixels (component default **6**, current scene **4**). **Pixels Per Unit** defaults to **16**, matching the 16-pixel artwork fitted to one-unit tiles. A cell's world size is `Pixel Size / Pixels Per Unit`; its displayed size follows the rendering camera's orthographic zoom and target resolution, including Scene View previews. Fractional screen sizes are preserved, with a one-screen-pixel minimum. Set Pixel Size to 1 for one artwork pixel per cell, or disable the component for native-resolution particles. The grid stays screen-aligned while objects rotate or move. Sprites and the HUD retain their normal shaders and resolution. `GridPointer` raycasts through this same camera for tile hover and placement; its `Physics2DRaycaster` handles HUD sprites.
 
@@ -24,7 +24,7 @@ Sorting layers, back to front:
 | Foreground | Castable outline (-1), queued-spell indicators (0), tile hover (1) |
 | UI | HUD sprites and text, rendered at display resolution |
 
-Wall artwork uses a `SortingGroup` anchored at the tile's bottom edge. The sprite includes its own front face. Changing a wall back to a flat tile moves its group to Ground. Artwork height does not change its sorting anchor. Characters have a `Feet Y anchor` child at the bottom of their sprite. Gameplay transforms remain at the tile center; they no longer use Z offsets to force draw order.
+Wall artwork uses a `SortingGroup` anchored at the tile's bottom edge. The sprite includes its own front face. Changing a wall back to a flat tile moves its group to Ground. Artwork height does not change its sorting anchor. Characters have a `Feet Y anchor` child at the bottom of their sprite. Gameplay transforms stay at the tile center; sorting anchors control draw order.
 
 `ParticlePrefabAuthoring.Bake` creates anchors in the editor and saves them into particle prefabs. Playback uses the authored hierarchy directly. A tile effect's systems share the tile-center anchor. A reaction's destination systems share an anchor at that destination; each link sorts at its midpoint. The existing reaction links are already split into one-cell edges, including diagonal edges. Rotation and grid scale apply to these anchors along with the effect. Internal prefab sorting orders preserve the arrangement of flame bodies, cores and sparks.
 
@@ -44,7 +44,7 @@ The boundary vertices are converted from board coordinates into player-local coo
 
 `CastableOutline.mat` uses the existing `Grid Mage/Element Particle` shader with white tint and zero sway. The outline shares `Main Camera`'s `ParticlePixelation` settings, including pixelated silhouettes and fade, without another camera, render target or postprocessing pass. Queued previews and the hover sprite sort above it. Disabling the component hides the renderer; re-enabling rebuilds from the latest cache, and destroying it releases its mesh.
 
-`Tools > Grid Mage > Rendering > Check castable outline` validates all 512 three-by-three grid masks, samples joined-band coverage for holes, concavities, diagonal contacts and narrow passages, and checks GPU fade, pixel cells, alpha seams, indicator sorting and mesh lifetime. Images and results go to `Temp/CastableOutlineChecks`. `CastableOutlineChecks.CheckLifecycle()` runs in a fresh Play session to check the scene reference, initialization, grid reset, Blink rebuild and empty-range clearing; stop Play afterward to discard the test board.
+`Tools > Automaturgy > Rendering > Check castable outline` validates all 512 three-by-three grid masks, samples joined-band coverage for holes, concavities, diagonal contacts and narrow passages, and checks GPU fade, pixel cells, alpha seams, indicator sorting and mesh lifetime. Images and results go to `Temp/CastableOutlineChecks`. `CastableOutlineChecks.CheckLifecycle()` runs in a fresh Play session to check the scene reference, initialization, grid reset, Blink rebuild and empty-range clearing; stop Play afterward to discard the test board.
 
 ## Responsibilities and validation
 
@@ -55,7 +55,7 @@ The boundary vertices are converted from board coordinates into player-local coo
 - `CastableOutline`: one reusable area mesh driven by the cached castability grid.
 - `TextureHandler`: artwork placement and ground/wall classification, using SpriteCatalog.
 
-`Tools > Grid Mage > Rendering > Configure Y-sorted world` validates prerequisites and configures the active gameplay scene, mob prefab, tile Z offsets and renderer settings. Scene edits are marked dirty for review. The checked-in assets are already configured.
+`Tools > Automaturgy > Rendering > Configure Y-sorted world` validates prerequisites and configures the active gameplay scene, mob prefab, tile Z offsets and renderer settings. Scene edits are marked dirty for review. The checked-in assets are already configured.
 
 `ParticlePixelationChecks.Run` checks GPU output for full cells at game-pixel sizes 1, 4, 6 and 9, two rotations and zoom levels, and three resolutions (including a doubled resolution and fractional cell sizes). Its 48 grid/alpha cases also check alpha seams; additional checks cover disabled pixelation, native sprite edges and both sprite/particle sorting orders. Captures and results go to `Temp/ParticlePixelationChecks`.
 
@@ -67,6 +67,6 @@ For CLI validation, use an isolated copy of the project:
 & 'C:/Program Files/Unity/Hub/Editor/6000.6.0f1/Editor/Unity.exe' -batchmode -projectPath '<isolated-project>' -executeMethod WorldRenderingChecks.Run -logFile '<log-path>'
 ```
 
-The checks clone gameplay wiring into an unsaved rectangular fixture, preserving cross-object references, and restore the previously active scene afterward. Save scene edits before starting. Setup/migration is not a prerequisite for validation. Omit `-quit`: the checks enter Play Mode and exit batch Unity when finished (an interactive editor returns to Edit Mode). They cover both rendered particle/sprite occlusion orders, catalog anchors at all four rotations, wall transitions, effect continuity and reuse, camera zoom/resize, tile picking and grid reset. Images and results are saved in `Temp/WorldRenderingChecks`.
+The checks clone gameplay wiring into an unsaved rectangular fixture, preserving cross-object references, and restore the previously active scene afterward. Save scene edits before starting. Checks use the configured assets directly. Omit `-quit`: the checks enter Play Mode and exit batch Unity when finished (an interactive editor returns to Edit Mode). They cover both rendered particle/sprite occlusion orders, catalog anchors at all four rotations, wall transitions, effect continuity and reuse, camera zoom/resize, tile picking and grid reset. Images and results are saved in `Temp/WorldRenderingChecks`.
 
-See [the refactoring validation guide](Refactoring/Validation.md) for all current suites and outputs.
+See [the validation guide](Validation.md) for suites, fixtures, and outputs.

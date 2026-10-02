@@ -12,7 +12,7 @@ public static class CastableOutlineChecks
 {
     private const string Output = "Temp/CastableOutlineChecks";
     private static readonly CheckSupport.Runner runner = new();
-    [MenuItem("Tools/Grid Mage/Rendering/Check castable outline")]
+    [MenuItem("Tools/Automaturgy/Rendering/Check castable outline")]
     public static void Run() => runner.Start(RunChecks(), "Temp/CastableOutlineChecks");
 
     private static IEnumerator RunChecks()

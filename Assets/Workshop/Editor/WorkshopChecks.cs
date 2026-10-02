@@ -18,7 +18,7 @@ namespace GridMage.Workshop.Editor
             try { action(); } catch (FormatException) { rejected = true; }
             Require(rejected, message);
         }
-        [MenuItem("Tools/Grid Mage/Workshop/Run checks")]
+        [MenuItem("Tools/Automaturgy/Workshop/Run checks")]
         public static void RunMenu() => Debug.Log(Run());
         public static string Run()
         {

@@ -13,7 +13,7 @@ public static class TilemapLevelSetup
 {
     private const string Folder = "Assets/Levels/Markers";
 
-    [MenuItem("Tools/Grid Mage/Levels/Create tilemaps from current grid")]
+    [MenuItem("Tools/Automaturgy/Levels/Create tilemaps from current grid")]
     public static void Create()
     {
         if (Application.isPlaying) throw new InvalidOperationException("Create level tilemaps outside Play mode.");

@@ -5,7 +5,7 @@ namespace Assets.Scripts
 {
     public enum LevelSpawnKind { None, Player, Enemy }
 
-    [CreateAssetMenu(fileName = "Level Marker", menuName = "Grid Mage/Level Marker")]
+    [CreateAssetMenu(fileName = "Level Marker", menuName = "Automaturgy/Level Marker")]
     public sealed class LevelMarkerTile : UnityEngine.Tilemaps.Tile
     {
         [Tooltip("Terrain height in half-unit increments. Blue numbers represent n + 0.5.")]
